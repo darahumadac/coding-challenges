@@ -11,7 +11,6 @@ public partial class CCWCCmd : ICommand
     private string _data;
     private List<string> _results;
     private string[] _flagsArgs;
-    private TextReader? _reader;
 
 
 
@@ -20,32 +19,39 @@ public partial class CCWCCmd : ICommand
         _flagsArgs = args.Length > 1 ? args[0..(args.Length - 1)] : [];
         _filename = args.Length > 0 ? args.Last() : string.Empty;
 
-        _reader = null;
         _data = string.Empty;
         _results = new List<string>();
     }
 
-    public CCWCCmd(string[] args, string content) : this(args)
+    public CCWCCmd(string[] args, string fileContent) : this(args)
     {
-        _reader = new StringReader(content);
+        _data = fileContent;
     }
 
     //flags
     public ResultCode Execute()
     {
-        try
+        if (_filename == string.Empty)
         {
-            using (_reader ??= File.OpenText(_filename))
-            {
-                _data = _reader.ReadToEnd();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
-            return ResultCode.FAILED;
+            Console.Error.WriteLine("Filename is expected.");
+            return ResultCode.INVALID_ARGS;
         }
 
+        if (_data == string.Empty)
+        {
+            try
+            {
+                using (StreamReader reader = File.OpenText(_filename))
+                {
+                    _data = reader.ReadToEnd();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return ResultCode.FAILED;
+            }
+        }
 
         IFlag[] cmdFlags = flagsMap.Values.OrderBy(f => f.Key).Select(f => f.Value).ToArray();
         if (_flagsArgs.Length > 0 && !TryParseFlags(_flagsArgs, out cmdFlags))
