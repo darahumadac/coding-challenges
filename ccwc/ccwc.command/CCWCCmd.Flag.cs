@@ -11,7 +11,6 @@ public partial class CCWCCmd
         {'w', new(1, new WordCountFlag())},
         {'c', new(2, new CharBytesCountFlag())},
     };
-    private char[] flagOrder = ['l', 'w', 'c'];
 
     private class LineCountFlag : IFlag
     {
