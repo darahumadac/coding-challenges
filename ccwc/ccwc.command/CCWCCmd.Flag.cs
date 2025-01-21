@@ -24,7 +24,7 @@ public partial class CCWCCmd
     {
         public void Execute(ICommand command)
         {
-            command.AppendResult(Regex.Matches(command.GetData(), @"\w+").Count.ToString());
+            command.AppendResult(Regex.Matches(command.GetData(), @"\S+").Count.ToString());
         }
     }
 
