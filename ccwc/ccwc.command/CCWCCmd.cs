@@ -25,9 +25,9 @@ public partial class CCWCCmd : ICommand
         _results = new List<string>();
     }
 
-    public CCWCCmd(string[] args, TextReader reader) : this(args)
+    public CCWCCmd(string[] args, string content) : this(args)
     {
-        _reader = reader;
+        _reader = new StringReader(content);
     }
 
     //flags
@@ -35,7 +35,10 @@ public partial class CCWCCmd : ICommand
     {
         try
         {
-            SetData(_reader ?? File.OpenText(_filename));
+            using (_reader ??= File.OpenText(_filename))
+            {
+                _data = _reader.ReadToEnd();
+            }
         }
         catch (Exception ex)
         {
@@ -47,7 +50,7 @@ public partial class CCWCCmd : ICommand
         IFlag[] cmdFlags = flagsMap.Values.OrderBy(f => f.Key).Select(f => f.Value).ToArray();
         if (_flagsArgs.Length > 0 && !TryParseFlags(_flagsArgs, out cmdFlags))
         {
-            return ResultCode.FAILED;
+            return ResultCode.INVALID_ARGS;
         }
 
         foreach (IFlag flag in cmdFlags)
@@ -82,13 +85,6 @@ public partial class CCWCCmd : ICommand
         return true;
     }
 
-    private void SetData(TextReader reader)
-    {
-        using (reader)
-        {
-            _data = reader.ReadToEnd();
-        }
-    }
 
     public string GetData()
     {

@@ -10,7 +10,8 @@ public interface ICommand
 
 public enum ResultCode
 {
-    SUCCESS = 0,
-    FAILED = 1,
-    WARNING = 2
+    SUCCESS,
+    FAILED,
+    WARNING,
+    INVALID_ARGS
 }
