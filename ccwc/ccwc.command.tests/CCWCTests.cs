@@ -60,14 +60,14 @@ public class CCWCCmdTests
     }
 
     [Test]
-    [TestCase("1 4 19 test.txt", "test.txt", TestName = "Output all flags in order of l,w,c when no flags are provided")]
-    [TestCase("1 4 19 test.txt", "-l", "-w", "-c", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in multiple flags")]
-    [TestCase("1 4 19 test.txt", "-lwc", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in single flag")]
-    [TestCase("1 4 19 test.txt", "-w", "-cl", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in multiple flags in different formats")]
+    [TestCase("1 4 22 test.txt", "test.txt", TestName = "Output all flags in order of l,w,c when no flags are provided")]
+    [TestCase("1 4 22 test.txt", "-l", "-w", "-c", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in multiple flags")]
+    [TestCase("1 4 22 test.txt", "-lwc", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in single flag")]
+    [TestCase("1 4 22 test.txt", "-w", "-cl", "test.txt", TestName = "Output all flags in order of l,w,c when all flags are provided in multiple flags in different formats")]
     [TestCase("1 test.txt", "-l", "test.txt", TestName = "Output only line count result for selected flag l")]
     [TestCase("4 test.txt", "-w", "test.txt", TestName = "Output only word count result for selected flag w")]
-    [TestCase("19 test.txt", "-c", "test.txt", TestName = "Output only byte count result for selected flag c")]
-    [TestCase("1 19 test.txt", "-c", "-l", "test.txt", TestName = "Output only selected flags in order l,w,c")]
+    [TestCase("22 test.txt", "-c", "test.txt", TestName = "Output only byte count result for selected flag c")]
+    [TestCase("1 22 test.txt", "-c", "-l", "test.txt", TestName = "Output only selected flags in order l,w,c")]
     public void Execute_ShouldReturnSuccess_AndOutputResult_WhenFlagsAreValid(string expectedResult, params string[] args)
     {
         //arrange
