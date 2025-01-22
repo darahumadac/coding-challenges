@@ -6,12 +6,6 @@ namespace ccwc.command;
 
 public partial class CCWCCmd
 {
-    private Dictionary<char, KeyValuePair<int, IFlag>> flagsMap = new(){
-        {'l', new (0, new LineCountFlag())},
-        {'w', new(1, new WordCountFlag())},
-        {'c', new(2, new CharBytesCountFlag())},
-    };
-
     private class LineCountFlag : IFlag
     {
         public void Execute(ICommand command)

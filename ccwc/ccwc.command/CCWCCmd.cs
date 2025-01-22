@@ -4,6 +4,8 @@ using Microsoft.VisualBasic;
 
 namespace ccwc.command;
 
+using FlagOrder = int;
+
 public partial class CCWCCmd : ICommand
 {
 
@@ -11,6 +13,12 @@ public partial class CCWCCmd : ICommand
     private string _data;
     private List<string> _results;
     private string[] _flagsArgs;
+
+    private readonly Dictionary<char, KeyValuePair<FlagOrder, IFlag>> _flagsMap = new(){
+        {'l', new (0, new LineCountFlag())},
+        {'w', new(1, new WordCountFlag())},
+        {'c', new(2, new CharBytesCountFlag())},
+    };
 
 
 
@@ -53,7 +61,7 @@ public partial class CCWCCmd : ICommand
             }
         }
 
-        IFlag[] cmdFlags = flagsMap.Values.OrderBy(f => f.Key).Select(f => f.Value).ToArray();
+        IFlag[] cmdFlags = _flagsMap.Values.OrderBy(f => f.Key).Select(f => f.Value).ToArray();
         if (_flagsArgs.Length > 0 && !TryParseFlags(_flagsArgs, out cmdFlags))
         {
             return ResultCode.INVALID_ARGS;
@@ -79,7 +87,7 @@ public partial class CCWCCmd : ICommand
 
         //validate that all chars are valid
         HashSet<char> flagsSet = [.. string.Join("", flagsArgs).Replace("-", "").ToCharArray()];
-        var invalidFlags = flagsSet.Where(f => !flagsMap.ContainsKey(f)).Select(f => $"'{f}'").ToArray();
+        var invalidFlags = flagsSet.Where(f => !_flagsMap.ContainsKey(f)).Select(f => $"'{f}'").ToArray();
         if (invalidFlags.Length > 0)
         {
             Console.Error.WriteLine($"Unknown flag(s): {string.Join(", ", invalidFlags)}");
@@ -87,7 +95,7 @@ public partial class CCWCCmd : ICommand
         }
 
         //create IFlag from flags
-        flags = flagsSet.Select(f => flagsMap[f]).OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value).ToArray();
+        flags = flagsSet.Select(f => _flagsMap[f]).OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value).ToArray();
         return true;
     }
 
