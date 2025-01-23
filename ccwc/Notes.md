@@ -13,3 +13,10 @@
 - When using `-exec` option in `find`, make sure to add space between `-exec *command* {}` and `\;` . For example, `-exec rm -rf {} \;` instead of `-exec rm -rf {}\;`  
 - can run multiple bash commands using `find` by using `find . -exec bash "*command_1 {}*; command_2 {}" \;`
 - make sure to wrap folders or filenames with quotes `"` when using them in bash script because bash splits spaces by default
+- Printing messages in Makefile:
+  - `$(info your_text)` : Information. This doesn't stop the execution.
+  - `$(warning your_text)` : Warning. This shows the text as a warning.
+  - `$(error your_text)` : Fatal Error. This will stop the execution.
+
+## Makefile resources
+- https://makefiletutorial.com/
