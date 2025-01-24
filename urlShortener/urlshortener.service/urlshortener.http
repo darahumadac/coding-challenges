@@ -1,0 +1,13 @@
+@urlshortener_host = http://localhost:5163
+
+POST {{urlshortener_host}}/shorten
+Content-Type: application/json
+
+{
+    "longUrl": "http://localhost:8080/test"
+}
+
+###
+
+GET {{urlshortener_host}}/test HTTP/1.1
+Content-Type: application/json
