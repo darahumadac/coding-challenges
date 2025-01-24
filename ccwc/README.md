@@ -1,7 +1,8 @@
 # Project Description
+[**Build Your Own wc Tool**](/ccwc)
 - Mini project to build your own wc tool using C# and .NET Core framework
 
-# Building the solution
+## Building the solution
 - run `make` to clean, build, test, and publish the application
 - default configuration `CONFIG` is set to `Debug`. If for Release configuration, run make as `make CONFIG=Release`
   - targets:
@@ -10,7 +11,7 @@
     - `test` - runs unit tests
     - `publish` - publishes the application based on  configuration `CONFIG`
 
-# Running the ccwc tool
+## Running the ccwc tool
 - Usage: `ccwc.exe [OPTION]... [FILE]`
 - Prints newline, word, and byte counts for a FILE
 - By default, prints the counts in the following order: newline, word, byte count.
