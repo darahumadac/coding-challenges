@@ -10,7 +10,7 @@ $(info [I] Solution File:		$(SOLUTION_FILE))
 all: clean build test publish
 
 restore:
-	@echo -e "\n[I]Restoring dependencies ..."
+	@echo -e "\n[I] Restoring dependencies ..."
 	@dotnet restore $(SOLUTION_FILE)
 
 clean:
