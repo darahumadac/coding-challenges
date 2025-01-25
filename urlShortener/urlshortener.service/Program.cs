@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using urlshortener.service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +20,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Endpoints
-app.MapPost("/shorten", (ShortenRequest request) =>
+app.MapPost("/shorten", (ShortenRequest request, HttpContext context) =>
 {
     var validationResults = new List<ValidationResult>();
     var validationContext = new ValidationContext(request);
@@ -30,7 +29,8 @@ app.MapPost("/shorten", (ShortenRequest request) =>
         return Results.BadRequest(validationResults);
     }
 
-    string shortUrl = UrlShortener.ShortenUrl(request.LongUrl);
+    string encodedUrl = new UrlShortener().ShortenUrl(request.LongUrl);
+    string shortUrl = $"{context.Request.Scheme}://{context.Request.Host}/{encodedUrl}";
     return Results.Created(shortUrl, new ShortenResponse(request.LongUrl, shortUrl));
 });
 
