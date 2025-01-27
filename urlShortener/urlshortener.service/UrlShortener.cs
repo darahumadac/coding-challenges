@@ -1,46 +1,56 @@
-using System.IO.Hashing;
-using System.Text;
+using UrlShortenerResult = (ResultCode code, string shortUrl);
 using System.Text.RegularExpressions;
 
 namespace urlshortener.service;
 
 public class UrlShortener
 {
-    private readonly Func<long> _generateSalt;
+    private readonly Func<long> _generateId;
     private readonly Regex _allowedChars;
-    private readonly static Func<long> _getUnixTsMs = () => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    private readonly UrlShortenerDbContext _db;
     private readonly static Regex _lettersAndDigits = new Regex(@"[a-zA-Z0-9]");
     private readonly char[] _validChars;
 
-    public UrlShortener(Func<long>? generateSalt, Regex? allowedChars)
+    public UrlShortener(Func<long>? generateId, Regex? allowedChars, UrlShortenerDbContext db)
     {
-        _generateSalt = generateSalt ?? _getUnixTsMs;
+        _generateId = generateId ?? IdGenerator.GenerateId;
         _allowedChars = allowedChars ?? _lettersAndDigits;
         //get ascii characters (0-127) in the allowed characters regex
         _validChars = Enumerable.Range(0, 128)
                         .Select(i => (char)i)
                         .Where(c => _allowedChars.IsMatch(c.ToString()))
                         .ToArray();
+        _db = db;
     }
 
-    public UrlShortener() : this(_getUnixTsMs, _lettersAndDigits) { }
+    public UrlShortener(UrlShortenerDbContext db) : this(IdGenerator.GenerateId, _lettersAndDigits, db) { }
 
-    public string ShortenUrl(string longUrl)
+    public UrlShortenerResult ShortenUrl(string longUrl)
     {
-        //TODO: check if longurl is not in db. if it is, return the short url. if not, generate new id and shorten url
-        //TODO: only generate id if longurl is not in db
+        var mapping = _db.UrlMappings.Find(longUrl);
+        if (mapping != null)
+        {
+            return (ResultCode.EXISTS, mapping.ShortUrl);
+        }
 
-        long salt = _generateSalt();
-        //hash url to crc32 which gives a hex, and convert it to long
-        long encodedUrl = Int64.Parse(
-            Convert.ToHexString(Crc32.Hash(Encoding.ASCII.GetBytes(longUrl))),
-            System.Globalization.NumberStyles.HexNumber);
+        try
+        {
+            // generate shortened url
+            long id = _generateId();
+            //encode to appropriate base
+            string shortenedUrl = convertToBase(id, _validChars.Length);
+            _db.UrlMappings.Add(new UrlMapping() { LongUrl = longUrl, ShortUrl = shortenedUrl });
+            _db.SaveChanges();
 
-        //encode to appropriate base
-        string shortenedUrl = convertToBase(salt + encodedUrl, _validChars.Length);
-        //TODO: save the shortUrl in db with long url, 
+            return (ResultCode.OK, shortenedUrl);
+        }
+        catch (Exception ex)
+        {
+            //TODO: log error
+            //LOG ex.Message
+            return (ResultCode.ERROR, string.Empty);
+        }
 
-        return shortenedUrl;
     }
 
     private string convertToBase(long id, int numBase)
@@ -53,5 +63,15 @@ public class UrlShortener
             quotient /= numBase;
         }
         return result;
+    }
+
+    public UrlShortenerResult GetLongUrl(string shortUrl)
+    {
+        var mapping = _db.UrlMappings.FirstOrDefault(m => m.ShortUrl == shortUrl);
+        if (mapping != null)
+        {
+            return (ResultCode.EXISTS, mapping.LongUrl);
+        }
+        return (ResultCode.OK, string.Empty);
     }
 }

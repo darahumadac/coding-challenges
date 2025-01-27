@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using urlshortener.service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//configure database
+var dbConnectionString = builder.Configuration.GetConnectionString("UrlShortenerDB") ??
+                        throw new InvalidOperationException("No 'UrlShortenerDB' connection string found");
+builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlServer(dbConnectionString));
 
 var app = builder.Build();
 
@@ -20,7 +26,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Endpoints
-app.MapPost("/shorten", (ShortenRequest request, HttpContext context) =>
+app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url) =>
 {
     var validationResults = new List<ValidationResult>();
     var validationContext = new ValidationContext(request);
@@ -29,16 +35,33 @@ app.MapPost("/shorten", (ShortenRequest request, HttpContext context) =>
         return Results.BadRequest(validationResults);
     }
 
-    string encodedUrl = new UrlShortener().ShortenUrl(request.LongUrl);
-    string shortUrl = $"{context.Request.Scheme}://{context.Request.Host}/{encodedUrl}";
-    return Results.Created(shortUrl, new ShortenResponse(request.LongUrl, shortUrl));
+    (ResultCode result, string encodedUrl) = new UrlShortener(db).ShortenUrl(request.LongUrl);
+    if (result == ResultCode.ERROR)
+    {
+        return Results.StatusCode(500);
+    }
+
+    string createdAtLocation = url.GetUriByName(context, "GetUrl", new { shortUrl = encodedUrl }) ??
+                        $"{context.Request.Scheme}://{context.Request.Host}/{encodedUrl}";
+    var response = new ShortenResponse(request.LongUrl, createdAtLocation);
+    if (result == ResultCode.EXISTS)
+    {
+        return Results.Ok(response);
+    }
+    return Results.CreatedAtRoute(routeName: "GetUrl", routeValues: new { shortUrl = encodedUrl }, response);
 });
 
-app.MapGet("/{shortUrl}", (string shortUrl) =>
+
+app.MapGet("/{shortUrl}", (string shortUrl, UrlShortenerDbContext db) =>
 {
-    //TODO: 301 redirect
-    return shortUrl;
-});
+    (ResultCode result, string longUrl) = new UrlShortener(db).GetLongUrl(shortUrl);
+    if (result == ResultCode.NOT_FOUND)
+    {
+        return Results.NotFound();
+    }
+    // return Results.Redirect(longUrl, true);
+    return Results.Json(longUrl); //TODO: Remove this, and replace with Permanent Redirect
+}).WithName("GetUrl");
 
 app.Run();
 
