@@ -1,5 +1,6 @@
 using Moq;
 
+namespace urlshortener.service.tests;
 public class IdGeneratorTest
 {
 

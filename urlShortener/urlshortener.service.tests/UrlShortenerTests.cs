@@ -108,4 +108,27 @@ public class UrlShortenerTests
             yield return tc;
         }
     }
+
+    [Test]
+    [TestCaseSource(nameof(GetLongUrlDbTestCases))]
+    public void GetLongUrl_ShouldCheckDb(string shortUrl, UrlShortenerResult expected)
+    {
+        var urlShortener = new UrlShortener(_mockDb.Object);
+        var result = urlShortener.GetLongUrl(shortUrl);
+        Assert.That(result, Is.EqualTo(expected));
+    }
+
+    private static IEnumerable<TestCaseData> GetLongUrlDbTestCases()
+    {
+        var testCases = new List<TestCaseData>(){
+            new TestCaseData(URL_EXISTING.Value, (ResultCode.OK, URL_EXISTING.Key))
+            .SetName("If short url exists, return OK and long url"),
+            new TestCaseData("x123", (ResultCode.NOT_FOUND, string.Empty))
+            .SetName("If short url does not exists, return NOT_FOUND and empty string"),
+        };
+        foreach (var tc in testCases)
+        {
+            yield return tc;
+        }
+    }
 }

@@ -1,3 +1,4 @@
+namespace urlshortener.service;
 public static class IdGenerator
 {
     private static long _lastTs = 0;

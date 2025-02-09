@@ -72,8 +72,8 @@ public class UrlShortener
         var mapping = _db.UrlMappings.FirstOrDefault(m => m.ShortUrl == shortUrl);
         if (mapping != null)
         {
-            return (ResultCode.EXISTS, mapping.LongUrl);
+            return (ResultCode.OK, mapping.LongUrl);
         }
-        return (ResultCode.OK, string.Empty);
+        return (ResultCode.NOT_FOUND, string.Empty);
     }
 }
