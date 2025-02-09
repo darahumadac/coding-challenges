@@ -50,6 +50,16 @@ dotnet ef database update
 ```
 - need to set the properties for entities e.g. DbSet<T> and T to `virtual` so that they can be mocked using Moq;
 - needs a parameterless ctor
+- During unit testing, can also create an instance of an in memory database as database provider:
+```bash
+# make sure to add the in memory database package
+dotnet add package Microsoft.EntityFrameworkCore.InMemory
+```
+```c#
+var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("databaseName").Options;
+var _db = new AppDbContext(options);
+```
+  - if in memory database is used for unit testing, cannot mock exceptions
 
 ## Moq
 - requires the DbSet<T> and entities to be virtual, and needs a parameterless ctor so that it can mock entity framework dbcontext
