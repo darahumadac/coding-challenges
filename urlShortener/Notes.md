@@ -56,6 +56,7 @@ dotnet ef database update
   - Prepare mock data list and cast mock data `AsQueryable()`
   - To mock data for the DbSet<T>, must setup mock `mockDbSet.As<IQueryable<T>>().Setup(s => s.GetEnumerator()).Returns(mockData.GetEnumerator())`
   - Pass the mockDbSet to mockDbContext `mockDbContext.Setup(db => db.SampleSet).Returns(mockDbSet.Object)`
+  - Need to mock `DbSet.Find`; `IQueryable.FirstOrDefault` no need to mock
 
 ## NUnit
 - `TestCase` attribute only accepts constant parameters. To be able to tell the Test where to get test data, need to use `TestCaseSource` attribute (see [TestCaseSource](https://docs.nunit.org/articles/nunit/writing-tests/attributes/testcasesource.html))

@@ -28,6 +28,8 @@ public class UrlShortener
     public UrlShortenerResult ShortenUrl(string longUrl)
     {
         var mapping = _db.UrlMappings.Find(longUrl);
+        // var mapping = _db.UrlMappings.FirstOrDefault(u => u.LongUrl == longUrl);
+
         if (mapping != null)
         {
             return (ResultCode.EXISTS, mapping.ShortUrl);
