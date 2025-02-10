@@ -5,7 +5,7 @@ Content-Type: application/json
 Cache-Control: no-cache
 
 {
-    "longUrl": "http://localhost:8080/test5"
+    "longUrl": "http://localhost:8080/test6"
 }
 
 ###

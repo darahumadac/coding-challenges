@@ -1,5 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
+using middleware;
+using Serilog;
+using Serilog.Context;
 using urlshortener.service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +17,20 @@ builder.Services.AddSwaggerGen();
 var dbConnectionString = builder.Configuration.GetConnectionString("UrlShortenerDB") ??
                         throw new InvalidOperationException("No 'UrlShortenerDB' connection string found");
 builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlServer(dbConnectionString));
+builder.Services.AddScoped<UrlShortener>();
+//configure logging
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody;
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+builder.Services.AddSerilog(); //injects serilog to Microsoft.Extensions.Logging.ILogger<T>
 
 var app = builder.Build();
 
@@ -24,20 +42,36 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+//use serilog
+app.UseMiddleware<RequestContextMiddleware>();
+app.UseHttpLogging();
+app.UseSerilogRequestLogging();
 
 // Endpoints
 app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url) =>
 {
-    var validationResults = new List<ValidationResult>();
-    var validationContext = new ValidationContext(request);
-    if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
+    //adding this will cause all log events within this block to have EndpointEventName property
+    using (LogContext.PushProperty("EndpointEventName", "RequestValidation"))
     {
-        return Results.BadRequest(validationResults);
+        app.Logger.LogInformation("Logging from endpoint");
+        var validationResults = new List<ValidationResult>();
+        var validationContext = new ValidationContext(request);
+        if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
+        {
+            app.Logger.LogError("Failed validation");
+            return Results.BadRequest(validationResults);
+        }
+
+        app.Logger.LogInformation("Passed validation");
     }
+
+    //this will not have "EndpointEventName" property anymore because it is outside the block
+    app.Logger.LogInformation("Trying to shorten url");
 
     (ResultCode result, string encodedUrl) = new UrlShortener(db).ShortenUrl(request.LongUrl);
     if (result == ResultCode.ERROR)
     {
+        app.Logger.LogError("Something went wrong");
         return Results.StatusCode(500);
     }
 

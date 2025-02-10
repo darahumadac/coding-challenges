@@ -1,5 +1,6 @@
 using UrlShortenerResult = (ResultCode code, string shortUrl);
 using System.Text.RegularExpressions;
+using Serilog;
 
 namespace urlshortener.service;
 
@@ -10,6 +11,7 @@ public class UrlShortener
     private readonly UrlShortenerDbContext _db;
     private readonly static Regex _lettersAndDigits = new Regex(@"[a-zA-Z0-9]");
     private readonly char[] _validChars;
+    public Serilog.ILogger _logger;
 
     public UrlShortener(Func<long>? generateId, Regex? allowedChars, UrlShortenerDbContext db)
     {
@@ -21,17 +23,28 @@ public class UrlShortener
                         .Where(c => _allowedChars.IsMatch(c.ToString()))
                         .ToArray();
         _db = db;
+        _logger = Log.ForContext<UrlShortener>();
+
     }
 
     public UrlShortener(UrlShortenerDbContext db) : this(IdGenerator.GenerateId, _lettersAndDigits, db) { }
 
     public UrlShortenerResult ShortenUrl(string longUrl)
     {
+
+        _logger.Information("testing darah");
         var mapping = _db.UrlMappings.Find(longUrl);
         // var mapping = _db.UrlMappings.FirstOrDefault(u => u.LongUrl == longUrl);
+        _logger
+            .ForContext("EventName", "LookupLongUrl")
+            .Information("Done finding longUrl in mapping");
 
         if (mapping != null)
         {
+            _logger
+                .ForContext("EventName", "ExistsLongUrl")
+                .Information("LongURL exists in database");
+
             return (ResultCode.EXISTS, mapping.ShortUrl);
         }
 
@@ -44,12 +57,18 @@ public class UrlShortener
             _db.UrlMappings.Add(new UrlMapping() { LongUrl = longUrl, ShortUrl = shortenedUrl });
             _db.SaveChanges();
 
+            _logger
+                .ForContext("EventName", "ShortenUrlSuccess")
+                .Information("Saved shortened url in database");
+
             return (ResultCode.OK, shortenedUrl);
         }
         catch (Exception ex)
         {
-            //TODO: log error
-            //LOG ex.Message
+            _logger
+                .ForContext("EventName", "ShortUrlGenerationException")
+                .ForContext("Error", ex)
+                .Error("Exception occurred");
             return (ResultCode.ERROR, string.Empty);
         }
 
@@ -72,8 +91,14 @@ public class UrlShortener
         var mapping = _db.UrlMappings.FirstOrDefault(m => m.ShortUrl == shortUrl);
         if (mapping != null)
         {
+            _logger
+                .ForContext("EventName", "FoundShortUrl")
+                .Information("short url exists in database");
             return (ResultCode.OK, mapping.LongUrl);
         }
+        _logger
+           .ForContext("EventName", "ShortUrlNotFound")
+           .Error("short not found in database");
         return (ResultCode.NOT_FOUND, string.Empty);
     }
 }

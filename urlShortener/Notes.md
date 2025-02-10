@@ -72,6 +72,83 @@ var _db = new AppDbContext(options);
 - `TestCase` attribute only accepts constant parameters. To be able to tell the Test where to get test data, need to use `TestCaseSource` attribute (see [TestCaseSource](https://docs.nunit.org/articles/nunit/writing-tests/attributes/testcasesource.html))
   - The test case provider must be `static` and must return an `IEnumerable`
 
+## Logging using Serilog
+- https://serilog.net/
+- https://nblumhardt.com/2016/08/context-and-correlation-structured-logging-concepts-in-net-5/
+- .net core provides out of the box support for logging http request and responses (see below). This can also be used together with serilog
+```c#
+builder.Services.AddHttpLogging();
+//using the httplogging
+app.UseHttpLogging();
+```
+- a `sink` in a logger is an output where the logger writes the log's stream to
+- add the Serilog package:
+```bash
+dotnet add package Serilog.AspNetCore
+#for logging to console
+dotnet add package Serilog.Sinks.Console
+#for logging to file
+dotnet add package Serilog.Sinks.File
+```
+- configure `Serilog` in `Program.cs`
+```c#
+//configure logging service
+Log.Logger = new LoggerConfiguration() //make sure this is Log.Logger
+  .ReadFrom.Configuration(builder.Configuration)
+  .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Services.AddSerilog(); //add serilog as log provider
+
+//Using the logger...
+//then use the logger from the classes
+private Serilog.ILogger _logger = Log.ForContext<MyService>(); //creates a logger with SourceContext
+_logger.ForContext("MyCustomProp", "test property").Information("doing something");
+//{..."MessageTemplate":"doing something"..."Properties":{"SourceContext": "MyService", "MyCustomProp":"test property"}}
+
+
+//logger is accessed via dependency injection (Microsoft.Extensions.Logging.ILogger) and also achieves the same SourceContext for the service
+public MyService(ILogger<MyService> logger){
+  _logger = logger;
+}
+public void DoAction(){
+  using(LogContext.PushProperty("MyCustomProp", "test prop")){
+    _logger.LogInformation("doing action");
+  }
+  _logger.LogInformation("doing action without custom prop");
+}
+//{..."MessageTemplate":"doing action"..."Properties":{"SourceContext": "MyService", "MyCustomProp":"test prop"}}
+//{..."MessageTemplate":"doing action without custom prop"..."Properties":{"SourceContext": "MyService"}}
+
+```
+- Using enrichers: https://github.com/serilog/serilog/wiki/Enrichment
+```c#
+app.UseSerilogRequestLogging();
+//HTTP POST /shorten responded 200 in 913.7836 ms
+
+//serilog request logging with diagnostic enrichers - example below adds TestBody property which has the value of the request body. This can also be done by using out of the box .net core feature - builder.Services.AddHttpLogging() then app.UseHttpLogging();
+//1) ensure that the request body can be read multiple times
+app.Use((context, next) =>
+{
+    context.Request.EnableBuffering();
+    return next();
+});
+//2) add the enrich diagnostic
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = async (diagnosticContext, httpContext) =>
+    {
+        //make sure to set the position to the beginning of the stream
+        httpContext.Request.Body.Seek(0, SeekOrigin.Begin);
+        using (var reader = new StreamReader(httpContext.Request.Body))
+        {
+            //read to end
+            var body = await reader.ReadToEndAsync();
+            diagnosticContext.Set("TestBody", body);
+        }
+    };
+});
+```
+
 ## Redis
 - To add redis in .net core app, add package `StackExchange.Redis`
 ```bash
