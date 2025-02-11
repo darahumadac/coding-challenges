@@ -11,6 +11,7 @@
 ```bash
 dotnet add package System.IO.Hashing
 ```
+- Add logging with [`Serilog`](#logging-using-serilog)
 
 
 ## Entity Framework Core
