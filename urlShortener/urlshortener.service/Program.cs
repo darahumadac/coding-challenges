@@ -101,8 +101,8 @@ app.MapGet("/{shortUrl}", (string shortUrl, UrlShortenerDbContext db, UrlShorten
     {
         return Results.NotFound();
     }
-    // return Results.Redirect(longUrl, true);
-    return Results.Json(longUrl); //TODO: Remove this, and replace with Permanent Redirect
+    app.Logger.LogInformation($"Redirecting to {longUrl}");
+    return Results.Redirect(longUrl, permanent: true);
 }).WithName("GetUrl");
 
 app.Run();

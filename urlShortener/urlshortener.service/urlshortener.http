@@ -5,10 +5,10 @@ Content-Type: application/json
 Cache-Control: no-cache
 
 {
-    "longUrl": "http://localhost:8080/test6"
+    "longUrl": "http://www.google.com"
 }
 
 ###
 
-GET {{urlshortener_HostAddress}}/iGJYCreqm HTTP/1.1
+GET {{urlshortener_HostAddress}}/16fjQvzSl6 HTTP/1.1
 Content-Type: application/json
