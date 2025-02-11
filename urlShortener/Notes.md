@@ -12,6 +12,11 @@
 dotnet add package System.IO.Hashing
 ```
 - Add logging with [`Serilog`](#logging-using-serilog)
+- Caching with [`redis`](#redis)
+- Add your service as a scoped service so that it can be used for Dependency Injection via constructor
+```c#
+builder.Services.AddScoped<MyService>();
+```
 
 
 ## Entity Framework Core
@@ -68,6 +73,7 @@ var _db = new AppDbContext(options);
   - To mock data for the DbSet<T>, must setup mock `mockDbSet.As<IQueryable<T>>().Setup(s => s.GetEnumerator()).Returns(mockData.GetEnumerator())`
   - Pass the mockDbSet to mockDbContext `mockDbContext.Setup(db => db.SampleSet).Returns(mockDbSet.Object)`
   - Need to mock `DbSet.Find`; `IQueryable.FirstOrDefault` no need to mock
+- when mocking methods, make sure to mock all parameters including optional ones. for example, mocking `redis.HashSet(RedisKey, RedisValue, RedisValue, When, CommandFlags)`, all of those parameters need to be mocked / specified. similarly, when using `.Callback((RedisKey, RedisValue, RedisValue, When, CommandFlags))`, all parameters should be specified
 
 ## NUnit
 - `TestCase` attribute only accepts constant parameters. To be able to tell the Test where to get test data, need to use `TestCaseSource` attribute (see [TestCaseSource](https://docs.nunit.org/articles/nunit/writing-tests/attributes/testcasesource.html))
@@ -155,6 +161,31 @@ app.UseSerilogRequestLogging(options =>
 ```bash
 dotnet add package StackExchange.Redis
 ```
+- To run redis in windows, make sure to download `redis` docker image
+- Then, create a container and run it
+```bash
+#create container without redis persistence
+docker create -p 6379:6379 --name redis redis
+#start container
+docker start redis
+```
+- To run `redis-cli` commands in the running redis container:
+```bash
+docker exec -it redis redis-cli
+```
+- Add redis as a singleton service
+```c#
+//register redis service
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
+```
+- Access redis through using dependency injection
+```c#
+private IDatabase _redis;
+public MyService(IConnectionMultiplexer mux){
+  _redis = mux.GetDatabase();
+}
+```
+- can mock redis using Moq
 
 ## .NET Core environments
 - to run .net core app in different enivornments, set the `--environment` flag when running the project

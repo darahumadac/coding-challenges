@@ -54,6 +54,7 @@ public class UrlShortenerTests
         _mockDb = new Mock<UrlShortenerDbContext>();
         _mockDb.Setup(db => db.UrlMappings).Returns(_mockUrlMappings.Object);
 
+        //mock redis
         var mockHash = new Dictionary<string, string>();
 
         _mockMux = new Mock<IConnectionMultiplexer>();

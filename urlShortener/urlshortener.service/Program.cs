@@ -23,7 +23,7 @@ builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlSe
 var cacheConnectionString = builder.Configuration.GetConnectionString("UrlShortenerCache") ?? "localhost";
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(cacheConnectionString));
 
-//configure UrlShortenerService
+//configure UrlShortenerService so dependencies can be injected, and this can be injected as dependency
 builder.Services.AddScoped<UrlShortener>();
 
 //configure logging
