@@ -219,3 +219,42 @@ Content-Type: application/json
 }
 
 ```
+
+## Frontend
+### React
+- `for` attribute of a `label` tag should be equal to the `id` of an `input` tag to bind them together
+- bootstrap a react.js app using vite:
+```bash
+npm create vite
+```
+- Some HTML attributes that are renamed in react:
+  - `class` --> `className`
+  - `for` --> `htmlFor`
+
+### HTML and CSS
+- **Grid vs. Flexbox**
+  - The CSS Grid Layout should be used for** two-dimensional layout**, with **rows AND columns**.
+  - The CSS Flexbox Layout should be used for **one-dimensional layout**, with** rows OR columns**.
+- **CSS Layouts:**
+  - for row AND column: use `display: grid`
+    - https://www.w3schools.com/css/css_grid.asp
+  - for row OR column: use `display: flex`
+    - https://www.w3schools.com/css/css3_flexbox.asp
+- CSS Properties used:
+  - `display`
+  - `grid-template-columns`
+  - `flex-direction`
+  - `vertical-align`
+  - `margin`
+  - `padding`
+  - `border-radius`
+  - `color`
+  - `background-color`
+  - `font-size`
+  - `border`
+- CSS Selectors used:
+  - https://www.w3schools.com/css/css_selectors.asp 
+  - `>` --> child combinator. matches all CHILDREN (not descendant) of specified element
+  - ` `(space) --> descendant combinator. matches all DESCENDANTS of specified element
+  - `.` --> class selector
+  - `#` --> id selector
