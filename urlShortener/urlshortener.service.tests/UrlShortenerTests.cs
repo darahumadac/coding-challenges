@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using StackExchange.Redis;
 using System.Text.RegularExpressions;
 using UrlShortenerResult = (ResultCode code, string shortUrl);
 namespace urlshortener.service.tests;
@@ -16,6 +18,9 @@ public class UrlShortenerTests
     private static KeyValuePair<string, string> URL_EXISTING =
         new KeyValuePair<string, string>("http://localhost:8080/existing", "abc123");
     private const string URL_ERROR = "http://localhost:8080/error";
+
+    private Mock<IConnectionMultiplexer> _mockMux;
+    private Mock<IDatabase> _mockRedis;
 
     [OneTimeSetUp]
     public void SetupMockGetId()
@@ -49,13 +54,41 @@ public class UrlShortenerTests
         _mockDb = new Mock<UrlShortenerDbContext>();
         _mockDb.Setup(db => db.UrlMappings).Returns(_mockUrlMappings.Object);
 
+        var mockHash = new Dictionary<string, string>();
+
+        _mockMux = new Mock<IConnectionMultiplexer>();
+        _mockRedis = new Mock<IDatabase>();
+        _mockRedis.Setup(r => r.HashSet("SHORTURL_MAPPING", It.IsAny<RedisValue>(), It.IsAny<RedisValue>(), It.IsAny<When>(), It.IsAny<CommandFlags>()))
+            .Callback((RedisKey x, RedisValue field, RedisValue val, When y, CommandFlags z) =>
+            {
+                var k = (string?)field;
+                var v = (string?)val;
+                if (k == null || v == null)
+                {
+                    return;
+                }
+                mockHash[k] = v;
+            });
+        _mockRedis.Setup(r => r.HashGet("SHORTURL_MAPPING", It.IsAny<RedisValue>(), It.IsAny<CommandFlags>()))
+            .Returns((RedisKey x, RedisValue field, CommandFlags z) =>
+            {
+                var f = (string?)field;
+                if (f == null)
+                {
+                    return RedisValue.Null;
+                }
+                return mockHash.ContainsKey(f) ? (RedisValue)mockHash[f] : RedisValue.Null;
+            });
+
+        _mockMux.Setup(mux => mux.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(_mockRedis.Object);
+
     }
 
     [Test]
     [TestCaseSource(nameof(ShortenUrlGenerationTestCases))]
     public void ShortenUrl_ShouldReturnString_WhenIdAndUrlIsConvertedToBaseNfAllowedChars(string allowedChars, UrlShortenerResult expected)
     {
-        var urlShortener = new UrlShortener(_mockId.Object, new Regex(allowedChars), _mockDb.Object);
+        var urlShortener = new UrlShortener(_mockId.Object, new Regex(allowedChars), _mockDb.Object, _mockMux.Object);
         var result = urlShortener.ShortenUrl(NEW_URL);
         Assert.That(result, Is.EqualTo(expected));
     }
@@ -77,7 +110,7 @@ public class UrlShortenerTests
     [Test]
     public void ShortenUrl_ShouldReturnADifferentStringPerMs()
     {
-        var urlShortener = new UrlShortener(_mockDb.Object);
+        var urlShortener = new UrlShortener(_mockDb.Object, _mockMux.Object);
         var shortUrl1 = urlShortener.ShortenUrl(NEW_URL);
         Assert.That(() => shortUrl1 != urlShortener.ShortenUrl(NEW_URL), Is.True.After(5).MilliSeconds);
     }
@@ -86,7 +119,7 @@ public class UrlShortenerTests
     [TestCaseSource(nameof(ShortenUrlCheckDbTestCases))]
     public void ShortenUrl_ShouldCheckDb(string longUrl, UrlShortenerResult expected)
     {
-        var urlShortener = new UrlShortener(_mockId.Object, null, _mockDb.Object);
+        var urlShortener = new UrlShortener(_mockId.Object, null, _mockDb.Object, _mockMux.Object);
         var result = urlShortener.ShortenUrl(longUrl);
         Assert.That(result, Is.EqualTo(expected));
     }
@@ -113,7 +146,7 @@ public class UrlShortenerTests
     [TestCaseSource(nameof(GetLongUrlDbTestCases))]
     public void GetLongUrl_ShouldCheckDb(string shortUrl, UrlShortenerResult expected)
     {
-        var urlShortener = new UrlShortener(_mockDb.Object);
+        var urlShortener = new UrlShortener(_mockDb.Object, _mockMux.Object);
         var result = urlShortener.GetLongUrl(shortUrl);
         Assert.That(result, Is.EqualTo(expected));
     }

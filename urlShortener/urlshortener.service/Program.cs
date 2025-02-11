@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using middleware;
 using Serilog;
 using Serilog.Context;
+using StackExchange.Redis;
 using urlshortener.service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,14 @@ builder.Services.AddSwaggerGen();
 var dbConnectionString = builder.Configuration.GetConnectionString("UrlShortenerDB") ??
                         throw new InvalidOperationException("No 'UrlShortenerDB' connection string found");
 builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlServer(dbConnectionString));
+
+//configure redis for caching
+var cacheConnectionString = builder.Configuration.GetConnectionString("UrlShortenerCache") ?? "localhost";
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(cacheConnectionString));
+
+//configure UrlShortenerService
 builder.Services.AddScoped<UrlShortener>();
+
 //configure logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -48,7 +56,7 @@ app.UseHttpLogging();
 app.UseSerilogRequestLogging();
 
 // Endpoints
-app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url) =>
+app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url, UrlShortener urlShortener) =>
 {
     //adding this will cause all log events within this block to have EndpointEventName property
     using (LogContext.PushProperty("EndpointEventName", "RequestValidation"))
@@ -68,7 +76,7 @@ app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShorten
     //this will not have "EndpointEventName" property anymore because it is outside the block
     app.Logger.LogInformation("Trying to shorten url");
 
-    (ResultCode result, string encodedUrl) = new UrlShortener(db).ShortenUrl(request.LongUrl);
+    (ResultCode result, string encodedUrl) = urlShortener.ShortenUrl(request.LongUrl);
     if (result == ResultCode.ERROR)
     {
         app.Logger.LogError("Something went wrong");
@@ -86,9 +94,9 @@ app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShorten
 });
 
 
-app.MapGet("/{shortUrl}", (string shortUrl, UrlShortenerDbContext db) =>
+app.MapGet("/{shortUrl}", (string shortUrl, UrlShortenerDbContext db, UrlShortener urlShortener) =>
 {
-    (ResultCode result, string longUrl) = new UrlShortener(db).GetLongUrl(shortUrl);
+    (ResultCode result, string longUrl) = urlShortener.GetLongUrl(shortUrl);
     if (result == ResultCode.NOT_FOUND)
     {
         return Results.NotFound();
