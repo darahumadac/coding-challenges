@@ -12,3 +12,12 @@ Cache-Control: no-cache
 
 GET {{urlshortener_HostAddress}}/16fjQvzSl6 HTTP/1.1
 Content-Type: application/json
+
+###
+POST {{urlshortener_HostAddress}}/shorten
+Content-Type: application/json
+Cache-Control: no-cache
+
+{
+    "longUrl": ""
+}
