@@ -49,6 +49,9 @@ function App() {
   const copyLink = () => {
     navigator.clipboard.writeText(shortUrl).then(() => {
       setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 800);
     });
   };
 
