@@ -7,6 +7,7 @@ function App() {
   const [done, setDone] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [shortUrl, setShortUrl] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   const urlShortener = `${config.urlShortenerHost}${config.shortenEndpoint}`;
   const shortenUrl = (e) => {
@@ -42,6 +43,13 @@ function App() {
     setDone(false);
     setErrorMsg("");
     setShortUrl("");
+    setIsCopied(false);
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      setIsCopied(true);
+    });
   };
 
   return (
@@ -77,8 +85,18 @@ function App() {
                   value={shortUrl}
                   disabled={true}
                 />
-                <button type="button" className="icon-button">
-                  <i className="large material-icons">content_copy</i>
+                <button
+                  type="button"
+                  className="icon-button tooltip"
+                  onClick={copyLink}
+                >
+                  <i className="large material-icons">
+                    {(isCopied && <span className="green-text">check</span>) ||
+                      "content_copy"}
+                  </i>
+                  <span className="tooltiptext">
+                    {(isCopied && "Copied") || "Copy"}
+                  </span>
                 </button>
               </div>
             ))}
