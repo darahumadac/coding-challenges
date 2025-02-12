@@ -1,0 +1,4 @@
+{
+  "urlShortenerHost": "http://localhost:5163",
+  "shortenEndpoint": "/shorten"
+}

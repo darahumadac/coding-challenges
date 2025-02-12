@@ -26,6 +26,17 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Conn
 //configure UrlShortenerService so dependencies can be injected, and this can be injected as dependency
 builder.Services.AddScoped<UrlShortener>();
 
+//configure cors - Cross-Origin Resource Sharing
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+            .WithMethods("POST", "GET")
+            .WithHeaders("Content-Type", "Accept");
+    });
+});
+
 //configure logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -54,6 +65,8 @@ app.UseHttpsRedirection();
 app.UseMiddleware<RequestContextMiddleware>();
 app.UseHttpLogging();
 app.UseSerilogRequestLogging();
+//use cors
+app.UseCors();
 
 // Endpoints
 app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url, UrlShortener urlShortener) =>

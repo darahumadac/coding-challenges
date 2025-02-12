@@ -133,7 +133,7 @@ app.UseSerilogRequestLogging();
 //HTTP POST /shorten responded 200 in 913.7836 ms
 
 //serilog request logging with diagnostic enrichers - example below adds TestBody property which has the value of the request body. This can also be done by using out of the box .net core feature - builder.Services.AddHttpLogging() then app.UseHttpLogging();
-//1) ensure that the request body can be read multiple times
+//1) ensure that the request body can be read multiple times.  request bodies are streams, and making the request reads the stream, so if a request contains a body, you can't make it twice. so we need to ensure that body can be read multiple times
 app.Use((context, next) =>
 {
     context.Request.EnableBuffering();
@@ -188,10 +188,12 @@ public MyService(IConnectionMultiplexer mux){
 - can mock redis using Moq
 
 ## .NET Core environments
+- https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-8.0
 - to run .net core app in different enivornments, set the `--environment` flag when running the project
 ```bash
 dotnet run --environment Production
 ```
+
 
 ## dotnet user-secrets
 - `dotnet user-secrets init --project <projname>` --> this will generate a `<UserSecretsId>` property in the `.csproj` file
@@ -221,7 +223,7 @@ Content-Type: application/json
 ```
 
 ## Frontend
-### React
+### React / Javascript
 - `for` attribute of a `label` tag should be equal to the `id` of an `input` tag to bind them together
 - bootstrap a react.js app using vite:
 ```bash
@@ -230,6 +232,45 @@ npm create vite
 - Some HTML attributes that are renamed in react:
   - `class` --> `className`
   - `for` --> `htmlFor`
+- When using `form` in react:
+  - `onSubmit vs action` attribute
+    - `action` - allows to invoke a server action on a `form` element, with *formData* as an argument
+    - `onSubmit` - allows to specify a function that will be executed *after* the server action is completed
+    - `event.preventDefault()` prevents postback, which the the default behavior for form submission
+  - handling text input:
+    - set a state for the input text: `const [myText, setMyText] = useState("");`
+    - the input text must then use the state by setting the attributes `value` and `onChange`
+    ```html
+    <input type="text" value={myText} onChange={e => setMyText(e.target.value)}/>
+    ```
+
+#### Event Handling
+  - `addEventListener` is the recommended way to register an event listener / hander: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+  ```js
+  addEventListener(type, listener)
+  addEventListener(type, listener, options)
+  addEventListener(type, listener, useCapture)
+  ```
+  - all event handlers receive a notification (`event`) which implements the `Event` interface when an event occurs
+    - https://developer.mozilla.org/en-US/docs/Web/API/Event
+
+#### Fetch, Promises, Async/Await, Then
+- https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+- when using `fetch` api, it returns a `Promise`, which can be `await`ed
+- **Await vs Then**
+  - both are used for handling asynchronous operations, primarily with dealing with Promises 
+  - `then` attaches a **callback** that will be executed when the `Promise` resolves
+    - promise chaining
+    - no need for async functions
+    - good for multiple independent promises (using `.then` and `Promise.all([<Promise1>,<Promise2>...])`)
+      - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
+    - for **parallel** async operations
+  - `await` *pauses execution of the function* until the `Promise` resolves
+    - synchronous-like behavior
+    - can only be used in an async function `const getData = async () => {}` or `async function getData(){}`
+    - error handling with try catch
+    - for **sequential** async operations
+
 
 ### HTML and CSS
 - **Grid vs. Flexbox**
@@ -258,3 +299,34 @@ npm create vite
   - ` `(space) --> descendant combinator. matches all DESCENDANTS of specified element
   - `.` --> class selector
   - `#` --> id selector
+
+## Makefile / Bash
+- run `(cd ./my_folder && <some command>)` to navigate to the directory and run the command without changing directory
+- add `&` at the end of the command to make it run in the background
+
+## Cross-Origin Resource Sharing (CORS)
+- Must set CORS policies in web api by adding CORS and using CORS in `Program.cs`:
+```c#
+builder.Services.AddCors(options => {
+  //this adds a policy which can then be passed in to app.UseCors("policyName");
+  options.AddPolicy("PolicyName", policy => {
+    policy.WithOrgins("https://mywebsite.com", "https://anotherwebsite.com") //set the allowed origins that access the api
+          .WithMethods("POST", "GET", "DELETE") //set the allowed methods for the api
+          .WithHeaders("Content-Type", "Authorization", "Accepts"); //set the allowed headers for the api
+  })
+
+  //to set a default policy
+  options.AddDefaultPolicy(options => {
+    options.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+          .WithMethods("POST", "GET") 
+          .AllowAnyHeader(); //this is not advisable
+  })
+});
+
+//then use the cors
+app.UseCors(); //or
+//or use cors with configured policy name
+app.UseCors("policyName"); 
+```
+- When adding policy to CORS, make sure that allowed origin (`WithOrigins`), allowed methods (`WithMethods`), and allowed headers (`WithHeaders`) are limited. 
+- Do not `AllowAnyOrigin`, `AllowAnyMethod` or `AllowAnyHeader` in Production environment. Set CORS according to the environment
