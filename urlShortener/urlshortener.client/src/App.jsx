@@ -59,7 +59,10 @@ function App() {
     <div className="container">
       <form onSubmit={shortenUrl}>
         <div className="row-input">
-          <label htmlFor="url" className={`label ${!errorMsg || "red-text"}`}>
+          <label
+            htmlFor={`${(!done && "url") || (errorMsg == "" && "short-url")}`}
+            className={`label ${!errorMsg || "red-text"}`}
+          >
             <i className="material-icons">
               {(errorMsg == "" && "link") || "error_outline"}
             </i>
