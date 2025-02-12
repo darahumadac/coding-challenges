@@ -90,21 +90,22 @@ function App() {
               <i className="fa fa-spinner fa-spin"></i>
             </div>
           )}
-          {(!done && (
+          {(!done && !isLoading && (
             <button type="submit" className="btn" id="submit-btn">
               {config.shortenUrlBtnText}
             </button>
-          )) || (
-            <input
-              type="reset"
-              onClick={resetForm}
-              className="btn"
-              id="generate-again-btn"
-              value={
-                (errorMsg == "" && config.resetText) || config.tryAgainText
-              }
-            />
-          )}
+          )) ||
+            (done && (
+              <input
+                type="reset"
+                onClick={resetForm}
+                className="btn"
+                id="generate-again-btn"
+                value={
+                  (errorMsg == "" && config.resetText) || config.tryAgainText
+                }
+              />
+            ))}
         </div>
       </form>
     </div>
