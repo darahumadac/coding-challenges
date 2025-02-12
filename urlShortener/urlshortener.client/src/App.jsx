@@ -21,6 +21,7 @@ function App() {
     })
       .then((response) => response.json())
       .then((data) => {
+        // console.log(data);
         setLongUrl("");
         setShortUrl(data.shortUrl);
         console.log(data);
@@ -115,7 +116,12 @@ function App() {
             </div>
           )}
           {(!done && !isLoading && (
-            <button type="submit" className="btn" id="submit-btn">
+            <button
+              type="submit"
+              className="btn"
+              id="submit-btn"
+              disabled={longUrl === ""}
+            >
               {config.shortenUrlBtnText}
             </button>
           )) ||

@@ -53,12 +53,19 @@ label > i {
   font-size: 18px;
   border: 1px solid #1f8244;
   background-color: #1f8244;
+  cursor: pointer;
 }
 
-input#url:disabled {
+.btn:hover {
+  background-color: #388e3c;
+}
+
+input#url:disabled,
+#submit-btn:disabled {
   background-color: #dfdfdf !important;
   border: 1px solid #dfdfdf;
   color: #9f9f9f !important;
+  cursor: auto;
 }
 
 input#short-url:disabled {
