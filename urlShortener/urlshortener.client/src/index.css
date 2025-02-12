@@ -37,6 +37,11 @@
   font-size: 18px;
 }
 
+.row-input > #spinner {
+  display: flex;
+  justify-content: center;
+}
+
 label > i {
   margin: 0px 5px;
 }
@@ -48,4 +53,40 @@ label > i {
   font-size: 18px;
   border: 1px solid #1f8244;
   background-color: #1f8244;
+}
+
+input#url:disabled {
+  background-color: #dfdfdf !important;
+  border: 1px solid #dfdfdf;
+  color: #9f9f9f !important;
+}
+
+input#short-url:disabled {
+  color: black;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.input-group .input-icon {
+  border: 1px solid #dfdfdf;
+  border-right: none;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  flex-grow: 1;
+  font-size: 20px;
+}
+
+.input-group .icon-button {
+  font-size: 2rem;
+  border: 1px solid #dfdfdf;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.red-text {
+  color: #d50000;
 }

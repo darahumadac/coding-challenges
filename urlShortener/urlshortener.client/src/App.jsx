@@ -3,11 +3,14 @@ import config from "../config.json";
 
 function App() {
   const [longUrl, setLongUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+
   const urlShortener = `${config.urlShortenerHost}${config.shortenEndpoint}`;
   const shortenUrl = (e) => {
     e.preventDefault();
-
-    console.log("Shortening url ...");
     fetch(urlShortener, {
       method: "POST",
       headers: {
@@ -16,36 +19,92 @@ function App() {
       body: JSON.stringify({ longUrl }),
     })
       .then((response) => response.json())
-      .then((shortUrl) => {
-        //set long url to blank
+      .then((data) => {
         setLongUrl("");
-        console.log(shortUrl);
+        setShortUrl(data.shortUrl);
+        console.log(data);
       })
-      .catch((err) => console.error(`error encountered: ${err}`));
+      .catch((err) => {
+        setErrorMsg("Something went wrong!");
+        console.error(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setDone(true);
+      });
+
+    setIsLoading(true);
+  };
+
+  const resetForm = () => {
+    setLongUrl("");
+    setIsLoading(false);
+    setDone(false);
+    setErrorMsg("");
+    setShortUrl("");
   };
 
   return (
     <div className="container">
       <form onSubmit={shortenUrl}>
         <div className="row-input">
-          <label htmlFor="url" className="label">
-            <i className="material-icons">link</i>
-            Shorten a long URL
+          <label htmlFor="url" className={`label ${!errorMsg || "red-text"}`}>
+            <i className="material-icons">
+              {(errorMsg == "" && "link") || "error_outline"}
+            </i>
+            {(!done && config.instructionLabel) ||
+              (errorMsg == "" && config.copyLinkInstructionLabel) ||
+              errorMsg}
           </label>
-          <input
-            type="url"
-            id="url"
-            name="longUrl"
-            className="input-md"
-            placeholder="Enter long link here"
-            value={longUrl}
-            onChange={(e) => setLongUrl(e.target.value)}
-          />
+          {(!done && (
+            <input
+              type="url"
+              id="url"
+              name="longUrl"
+              className="input-md"
+              placeholder="Enter long link here"
+              value={longUrl}
+              onChange={(e) => setLongUrl(e.target.value)}
+              disabled={isLoading}
+            />
+          )) ||
+            (errorMsg == "" && (
+              <div className="input-group">
+                <input
+                  type="url"
+                  id="short-url"
+                  className="input-icon"
+                  value={shortUrl}
+                  disabled={true}
+                />
+                <button type="button" className="icon-button">
+                  <i className="large material-icons">content_copy</i>
+                </button>
+              </div>
+            ))}
         </div>
+
         <div className="row-input">
-          <button type="submit" className="btn">
-            Shorten URL
-          </button>
+          {isLoading && (
+            <div id="spinner" className="fa-2x">
+              <i className="fa fa-spinner fa-spin"></i>
+            </div>
+          )}
+          {(!done && (
+            <button type="submit" className="btn" id="submit-btn">
+              {config.shortenUrlBtnText}
+            </button>
+          )) || (
+            <input
+              type="reset"
+              onClick={resetForm}
+              className="btn"
+              id="generate-again-btn"
+              value={
+                (errorMsg == "" && config.resetText) || config.tryAgainText
+              }
+            />
+          )}
         </div>
       </form>
     </div>

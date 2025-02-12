@@ -1,4 +1,10 @@
 {
   "urlShortenerHost": "http://localhost:5163",
-  "shortenEndpoint": "/shorten"
+  "shortenEndpoint": "/shorten",
+  "shortenUrlBtnText": "Shorten URL",
+  "shortenUrlBtnLoadingText": "Generating Short URL ...",
+  "resetText": "Generate another link",
+  "tryAgainText": "Try generating another link",
+  "instructionLabel": "Shorten a long URL",
+  "copyLinkInstructionLabel": "Copy generated short URL"
 }
