@@ -68,6 +68,8 @@ app.UseSerilogRequestLogging();
 //use cors
 app.UseCors();
 
+app.MapGet("/", () => Results.Ok("API is up"));
+
 // Endpoints
 app.MapPost("/shorten", (ShortenRequest request, HttpContext context, UrlShortenerDbContext db, LinkGenerator url, UrlShortener urlShortener) =>
 {

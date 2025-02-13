@@ -17,7 +17,20 @@ dotnet add package System.IO.Hashing
 ```c#
 builder.Services.AddScoped<MyService>();
 ```
-
+### Publishing .NET Core app
+- `dotnet publish -c Release` --> this will create a `publish` folder
+  - Before publishing, ensure that there are `appsettings.Production.json` config. If there is none, the configuration will fall back to `appsettings.json`.
+  - you can run the app locally by running `dotnet <AppName>.dll`
+- Hosting in IIS:
+  - Create a folder in `C:\inetpub\wwwroot\<app>` and copy files from the `publish` folder of the app to this folder
+  - Create a site and point the location to the `C:\inetpub\wwwroot\<app>`
+  - Ensure the credentials are correct
+  - Create Application Pool:
+    - Create an app pool with .NET CLR version to `No managed code` 
+    - **Make sure the app pool has the correct credentials you are using for the database connections e.g. using a specific account instead of the AppPoolIdentity**
+#### Troubleshooting IIS deployment
+- If there is an error with ASP.NET core runtime when the site is browsed, try run the `<app>.exe` in cmd and check the required runtime needed to run the app
+- If there is a 500 error returned by the app, check `Event Viewer > Windows Logs > Application` and check if there are any logs for **database access** and other things that might have caused the error
 
 ## Entity Framework Core
 - install `dotnet ef` cli tool - `dotnet tool install --global dotnet-ef`
@@ -397,3 +410,23 @@ app.UseCors("policyName");
 ```
 - When adding policy to CORS, make sure that allowed origin (`WithOrigins`), allowed methods (`WithMethods`), and allowed headers (`WithHeaders`) are limited. 
 - Do not `AllowAnyOrigin`, `AllowAnyMethod` or `AllowAnyHeader` in Production environment. Set CORS according to the environment
+
+## Docker
+- use cmder when using docker cli, rather than Git bash to avoid issues with paths
+
+## Nginx
+- Deploy the frontend using nginx
+- Running nginx using docker and hosting static content:
+```bash
+docker run --name nginx -v <your app dir>:/usr/share/nginx/html -v nginx.conf:/etc/nginx/nginx.conf -p <your_port>:80 -d nginx #this also sets the nginx.conf
+```
+- Configuring nginx - update `/etc/nginx/nginx.conf` file. After updating the config file, make sure to reload it using `nginx -s reload`
+```conf
+  http{
+    server {
+      listen 80; #server listens to this port
+      root /usr/share/nginx/html; #this is where your app files should be, under this directory
+    }
+  }
+  
+```
