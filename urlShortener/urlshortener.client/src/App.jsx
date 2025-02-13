@@ -19,16 +19,33 @@ function App() {
       },
       body: JSON.stringify({ longUrl }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data);
+      .then((response) => {
+        return new Promise((resolve) => {
+          response.json().then((data) =>
+            resolve({
+              ok: response.ok,
+              statusCode: response.status,
+              data,
+            })
+          );
+        });
+      })
+      .then(({ ok, statusCode, data }) => {
+        if (!ok) {
+          const errMsg =
+            statusCode < 500
+              ? data.map((d) => d.errorMessage).join("\n")
+              : "Something went wrong!";
+
+          throw new Error(errMsg, {
+            cause: statusCode,
+          });
+        }
         setLongUrl("");
         setShortUrl(data.shortUrl);
-        console.log(data);
       })
       .catch((err) => {
-        setErrorMsg("Something went wrong!");
-        console.error(err);
+        setErrorMsg(err.message ?? "Something went wrong. Please try again");
       })
       .finally(() => {
         setIsLoading(false);
