@@ -155,6 +155,28 @@ app.UseSerilogRequestLogging(options =>
     };
 });
 ```
+### Using Seq with Serilog
+- to use seq locally, pull the docker image and run it
+```bash
+docker pull datalust/seq
+docker run --name seq -d --restart unless-stopped -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
+```
+- to ingest log files, install `seqcli` tool via dotnet tool, and configure it, then run ingest command
+```bash
+dotnet tool install --global seqcli
+
+# configure seqcli to connect to the seq server
+seqcli config -k connection.serverUrl -v https://your-seq-server
+#if connecting in docker in localhost, use your ip address
+seqcli config -k connection.serverUrl -v http://<your ip here>:<your port>
+#you can also configure api keys
+seqcli config -k connection.apiKey -v your-api-key # can skip this if running locally. i did not set up my api keys
+
+#then, run ingest command
+seqcli ingest -i log_*.txt --json #this ingests all log files and reads events as json
+```
+- documentation on importing log files in seq: https://docs.datalust.co/docs/importing-log-files
+- querying logs: https://docs.datalust.co/docs/the-seq-query-language
 
 ## Redis
 - To add redis in .net core app, add package `StackExchange.Redis`
