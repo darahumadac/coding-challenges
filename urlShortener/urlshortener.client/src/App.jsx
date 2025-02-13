@@ -29,7 +29,7 @@ function App() {
       case "handleError": {
         return {
           ...formData,
-          errorMsg: action.errMsg,
+          errorMsg: action.errorMsg,
         };
       }
       case "doneProcessing": {
@@ -85,12 +85,7 @@ function App() {
       })
       .then(({ ok, statusCode, data }) => {
         if (!ok) {
-          const errMsg =
-            statusCode < 500
-              ? data.map((d) => d.errorMessage).join("\n")
-              : "Something went wrong!";
-
-          throw new Error(errMsg, {
+          throw new Error(data.map((d) => d.errorMessage).join("\n"), {
             cause: statusCode,
           });
         }
@@ -99,7 +94,9 @@ function App() {
       .catch((err) => {
         dispatch({
           type: "handleError",
-          errorMsg: err.message ?? "Something went wrong. Please try again",
+          errorMsg:
+            (err.cause && err.message) ||
+            "Something went wrong. Please try again",
         });
       })
       .finally(() => {
