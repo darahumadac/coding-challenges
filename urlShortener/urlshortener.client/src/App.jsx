@@ -1,13 +1,66 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import config from "../config.json";
 
 function App() {
-  const [longUrl, setLongUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [shortUrl, setShortUrl] = useState("");
-  const [isCopied, setIsCopied] = useState(false);
+  const initialFormData = {
+    longUrl: "",
+    loading: false,
+    done: false,
+    errorMsg: "",
+    shortUrl: "",
+    copied: false,
+  };
+
+  const formDataReducer = (formData, action) => {
+    switch (action.type) {
+      case "loading": {
+        return {
+          ...formData,
+          loading: true,
+        };
+      }
+      case "urlShortened": {
+        return {
+          ...formData,
+          longUrl: "",
+          shortUrl: action.shortUrl,
+        };
+      }
+      case "handleError": {
+        return {
+          ...formData,
+          errorMsg: action.errMsg,
+        };
+      }
+      case "doneProcessing": {
+        return {
+          ...formData,
+          loading: false,
+          done: true,
+        };
+      }
+      case "resetForm": {
+        return initialFormData;
+      }
+      case "changeCopied": {
+        return {
+          ...formData,
+          copied: action.copied,
+        };
+      }
+      case "longUrlChanged": {
+        return {
+          ...formData,
+          longUrl: action.longUrl,
+        };
+      }
+      default: {
+        throw new Error("Unknown action: " + action.type);
+      }
+    }
+  };
+
+  const [formData, dispatch] = useReducer(formDataReducer, initialFormData);
 
   const urlShortener = `${config.urlShortenerHost}${config.shortenEndpoint}`;
   const shortenUrl = (e) => {
@@ -41,37 +94,31 @@ function App() {
             cause: statusCode,
           });
         }
-        setLongUrl("");
-        setShortUrl(data.shortUrl);
+        dispatch({ type: "urlShortened", shortUrl: data.shortUrl });
       })
       .catch((err) => {
-        setErrorMsg(err.message ?? "Something went wrong. Please try again");
+        dispatch({
+          type: "handleError",
+          errorMsg: err.message ?? "Something went wrong. Please try again",
+        });
       })
       .finally(() => {
-        setIsLoading(false);
-        setDone(true);
+        dispatch({ type: "doneProcessing" });
       });
 
-    setIsLoading(true);
-  };
-
-  const resetForm = () => {
-    setLongUrl("");
-    setIsLoading(false);
-    setDone(false);
-    setErrorMsg("");
-    setShortUrl("");
-    setIsCopied(false);
+    dispatch({ type: "loading" });
   };
 
   const copyLink = () => {
     navigator.clipboard.writeText(shortUrl).then(() => {
-      setIsCopied(true);
+      dispatch({ type: "changeCopied", copied: true });
       setTimeout(() => {
-        setIsCopied(false);
+        dispatch({ type: "changeCopied", copied: false });
       }, 800);
     });
   };
+
+  const { longUrl, loading, done, errorMsg, shortUrl, copied } = formData;
 
   return (
     <div className="container">
@@ -96,8 +143,10 @@ function App() {
               className="input-md"
               placeholder="Enter long link here"
               value={longUrl}
-              onChange={(e) => setLongUrl(e.target.value)}
-              disabled={isLoading}
+              onChange={(e) =>
+                dispatch({ type: "longUrlChanged", longUrl: e.target.value })
+              }
+              disabled={loading}
             />
           )) ||
             (errorMsg == "" && (
@@ -115,11 +164,11 @@ function App() {
                   onClick={copyLink}
                 >
                   <i className="large material-icons">
-                    {(isCopied && <span className="green-text">check</span>) ||
+                    {(copied && <span className="green-text">check</span>) ||
                       "content_copy"}
                   </i>
                   <span className="tooltiptext">
-                    {(isCopied && "Copied") || "Copy"}
+                    {(copied && "Copied") || "Copy"}
                   </span>
                 </button>
               </div>
@@ -127,12 +176,12 @@ function App() {
         </div>
 
         <div className="row-input">
-          {isLoading && (
+          {loading && (
             <div id="spinner" className="fa-2x">
               <i className="fa fa-spinner fa-spin"></i>
             </div>
           )}
-          {(!done && !isLoading && (
+          {(!done && !loading && (
             <button
               type="submit"
               className="btn"
@@ -145,7 +194,7 @@ function App() {
             (done && (
               <input
                 type="reset"
-                onClick={resetForm}
+                onClick={() => dispatch({ type: "resetForm" })}
                 className="btn"
                 id="generate-again-btn"
                 value={

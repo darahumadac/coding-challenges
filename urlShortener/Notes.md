@@ -243,6 +243,51 @@ npm create vite
     ```html
     <input type="text" value={myText} onChange={e => setMyText(e.target.value)}/>
     ```
+- `useReducer` - use this to consolidate all state update logic into a single function called a `reducer`
+  - https://react.dev/learn/extracting-state-logic-into-a-reducer
+  - use this to manage multiple state updates that are dependent on each other
+  - `reducer`
+    - a reducer function has 2 parameters: `currentState` and `action` object
+    - a `reducer` returns a next *state* for React to set depending on the `action.type`
+    - the convention is to use switch case statement inside reducers 
+```js
+const reducerFunction = (currentState, action) => {
+  switch(action.type){
+    case "done":{
+      return {
+        ...currentState,
+        loading: false,
+        message: "Done loading",
+        done: true
+      }
+    }
+    case "loading":{
+      return {
+        ...currentState,
+        loading: true,
+        message: action.message
+      }
+    }
+    default: {
+      throw new Error('Unknown action: ' + action.type);
+    }
+  }
+}
+
+const initialState = {loading: false, message: "Not loading", done: false};
+const [state, dispatch] = useReducer(reducerFunction, initialState);
+//do something to trigger loading state...
+dispatch(
+  //this is the action object
+  {type: "loading", message: "This is a loading message"}
+);
+//when done loading, trigger done loading state by dispatching done action
+dispatch({type: "done"});
+
+return (
+  <p>{state.message}</p>
+)
+``` 
 
 #### Event Handling
   - `addEventListener` is the recommended way to register an event listener / hander: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
