@@ -5,6 +5,11 @@
 - Makefile has **targets**, like build, clean, deploy, etc.
   - Default target is *all*
   - To define targets to run by default, specify it in the *all* target, like: `all: clean build test deploy`
+  - To add a pre-requisite target for the current target, add it after the target:
+```Makefile
+test: build
+  @echo "running test"
+```
 - starting a recipe with `@` suppresses echoing. Normally, `make` prints each line of the recipe before it is executed.
 - I encountered issues running bash commands in the Makefile.
   - **Issue**: Makefile has issues running bash commands
