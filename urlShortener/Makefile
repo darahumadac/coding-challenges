@@ -15,9 +15,10 @@ test: build
 	@dotnet test --no-build
 
 run: build
-	@echo "[I] Starting app ..."
-	@echo "[I] Starting redis via docker and running URL Shortener service ..."
-	@docker start redis
+	@echo "[I] Starting up app ..."
+	@echo "[I] Starting redis container ..."
+	@docker start redis || { echo "Error running redis container"; exit 1; }
+	@echo "[I] Running URL Shortener service ..."
 	@dotnet run --project ./urlshortener.service/urlshortener.service.csproj --no-build &
 	@echo "[I] Starting client ..."
 	@(cd ./urlshortener.client && npm run dev)
