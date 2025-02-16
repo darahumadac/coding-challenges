@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using middleware;
 using Serilog;
@@ -17,7 +18,15 @@ builder.Services.AddSwaggerGen();
 //configure database
 var dbConnectionString = builder.Configuration.GetConnectionString("UrlShortenerDB") ??
                         throw new InvalidOperationException("No 'UrlShortenerDB' connection string found");
-builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlServer(dbConnectionString));
+var connStringBuilder = new SqlConnectionStringBuilder(dbConnectionString);
+if (!connStringBuilder.IntegratedSecurity || builder.Environment.IsProduction())
+{
+    //add environment variables
+    builder.Configuration.AddEnvironmentVariables(prefix: "SHORTLY_");
+    connStringBuilder.UserID = builder.Configuration["DOCKER_SQLDB_USER"];
+    connStringBuilder.Password = builder.Configuration["DOCKER_SQLDB_PASSWORD"];
+}
+builder.Services.AddDbContext<UrlShortenerDbContext>(options => options.UseSqlServer(connStringBuilder.ConnectionString));
 
 //configure redis for caching
 var cacheConnectionString = builder.Configuration.GetConnectionString("UrlShortenerCache") ?? "localhost";
@@ -117,7 +126,8 @@ app.MapGet("/{shortUrl}", (string shortUrl, UrlShortenerDbContext db, UrlShorten
         return Results.NotFound();
     }
     app.Logger.LogInformation($"Redirecting to {longUrl}");
-    return Results.Redirect(longUrl, permanent: true);
+    return Results.Redirect(longUrl, permanent: true); //301 moved permanently - this will not hit server upon repeated requests
+    // return Results.Redirect(longUrl); //302 found - temporarily moved, will always call server
 }).WithName("GetUrl");
 
 app.Run();

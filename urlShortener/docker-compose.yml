@@ -1,0 +1,44 @@
+version: "3"
+services:
+  ui-server:
+    container_name: web_ui
+    build:
+      context: ./urlshortener.client
+    ports:
+      - 5173:80
+    restart: on-failure:5
+  redis-server:
+    container_name: redis_server
+    image: "redis"
+    ports:
+      - 6379:6379
+    restart: on-failure:5
+  sql-server:
+    container_name: sql_server
+    build:
+      context: ./urlshortener.service/Scripts
+      dockerfile: Dockerfile.db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DOCKER_SQLDB_PASSWORD}
+    ports:
+      - 1433:1433
+    volumes:
+      - /c/Apps/shortly/db/data:/var/opt/mssql/data
+      - /c/Apps/shortly/db/log:/var/opt/mssql/log
+    restart: on-failure:5
+  urlshortener-api:
+    container_name: urlshortener_api
+    build:
+      context: ./urlshortener.service
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://*:80
+      - SHORTLY_DOCKER_SQLDB_USER=${DOCKER_SQLDB_USER}
+      - SHORTLY_DOCKER_SQLDB_PASSWORD=${DOCKER_SQLDB_PASSWORD}
+    ports:
+      - 5163:80
+    depends_on:
+      - redis-server
+      - sql-server
+    restart: on-failure:5
