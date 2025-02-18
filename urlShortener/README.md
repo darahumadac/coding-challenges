@@ -1,3 +1,10 @@
 # Project Description
 [**Build Your Own URL Shortener**](/urlShortener)
-- Mini project to build your own URL shortener using C#, WEB API, and .NET Core framework
+A service that lets a client submit a long URL which is then shortened to make it easier to use.
+- **Languages:** C#, Javascript, SQL
+- **Technology / Frameworks:** WEB API (minimal APIs), .NET Core, Docker, HTML, CSS
+- **Libraries / Tools:** React, make, Serilog, Seq
+- **Databases:** SQL Server, Redis
+- **Testing:** nUnit, Moq
+
+## Design

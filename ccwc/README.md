@@ -1,6 +1,13 @@
 # Project Description
 [**Build Your Own wc Tool**](/ccwc)
-- Mini project to build your own wc tool using C# and .NET Core framework
+Build your own version of the Unix command line tool wc
+- **Languages:** C#
+- **Technology / Frameworks:** .NET Core
+- **Libraries / Tools:** make, Git Hooks
+- **Databases:** None used
+- **Testing:** nUnit, Moq
+
+## Design
 
 ## Building the solution
 - run `make` to clean, build, test, and publish the application
@@ -27,9 +34,3 @@ ccwc.exe test.txt
 ccwc.exe -w test.txt
 //Ouptut: 58164 test.txt
 ```
-
-# TODO
-- [ ] Add char counts
-- [ ] Add help option
-- [ ] Add support to read from standard input
-- [ ] Add support for multiple files
