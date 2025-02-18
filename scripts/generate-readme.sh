@@ -8,7 +8,8 @@ README_FILE="${ROOT_DIR}/README.md"
 echo -e "# Coding Challenges\nMy solutions to https://codingchallenges.fyi/\n" >> ${README_FILE}
 echo -e "## Challenges" >> ${README_FILE}
 
-find "${ROOT_DIR}" -mindepth 2 -type f -name README.md -exec bash -c "cat {}|sed -n '2,3p'" \; \
-    | while read project_name; do read project_desc;
-        printf "1. ${project_name}\n\t${project_desc}\n" >> ${README_FILE};
+find "${ROOT_DIR}" -mindepth 2 -maxdepth 2 -type f -name README.md \
+    | while read readme_file; do
+        CONTENTS=$(cat ${readme_file} | sed -n '2,8p')
+        printf "1. ${CONTENTS}\n" >> ${README_FILE};
     done
