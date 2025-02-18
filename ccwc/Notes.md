@@ -25,3 +25,9 @@ test: build
 
 ## Makefile resources
 - https://makefiletutorial.com/
+
+# TODO
+- [ ] Add char counts
+- [ ] Add help option
+- [ ] Add support to read from standard input
+- [ ] Add support for multiple files
