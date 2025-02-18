@@ -3,6 +3,16 @@ My solutions to https://codingchallenges.fyi/
 
 ## Challenges
 1. [**Build Your Own wc Tool**](/ccwc)
-	- Mini project to build your own wc tool using C# and .NET Core framework
+Build your own version of the Unix command line tool wc
+- **Languages:** C#
+- **Technology / Frameworks:** .NET Core
+- **Libraries / Tools:** make, Git Hooks
+- **Databases:** None used
+- **Testing:** nUnit, Moq
 1. [**Build Your Own URL Shortener**](/urlShortener)
-	- Mini project to build your own URL shortener using C#, WEB API, and .NET Core framework
+A service that lets a client submit a long URL which is then shortened to make it easier to use.
+- **Languages:** C#, Javascript, SQL
+- **Technology / Frameworks:** WEB API (minimal APIs), .NET Core, Docker, HTML, CSS
+- **Libraries / Tools:** React, make, Serilog, Seq
+- **Databases:** SQL Server, Redis
+- **Testing:** nUnit, Moq
