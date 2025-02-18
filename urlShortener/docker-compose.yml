@@ -4,6 +4,7 @@ services:
     container_name: web_ui
     build:
       context: ./urlshortener.client
+    image: darahumadac/shortly-ui:${TAG}
     ports:
       - 5173:80
     restart: on-failure:5
@@ -18,6 +19,7 @@ services:
     build:
       context: ./urlshortener.service/Scripts
       dockerfile: Dockerfile.db
+    image: darahumadac/shortly-db:${TAG}
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${DOCKER_SQLDB_PASSWORD}
@@ -32,10 +34,13 @@ services:
     build:
       context: ./urlshortener.service
       dockerfile: Dockerfile
+    image: darahumadac/shortly-api:${TAG}
     environment:
       - ASPNETCORE_URLS=http://*:80
       - SHORTLY_DOCKER_SQLDB_USER=${DOCKER_SQLDB_USER}
       - SHORTLY_DOCKER_SQLDB_PASSWORD=${DOCKER_SQLDB_PASSWORD}
+    volumes:
+      - /c/Apps/shortly/api/logs:/app/logs
     ports:
       - 5163:80
     depends_on:

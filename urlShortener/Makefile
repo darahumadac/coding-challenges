@@ -1,4 +1,7 @@
-.PHONY: all clean build test dev package run-package deploy
+.PHONY: all clean build test dev package run-package build-images start
+
+TAG ?= latest
+$(info [I] TAG:	$(TAG))
 
 all: clean build test
 
@@ -48,7 +51,10 @@ run-package:
 	@echo "[I] Starting ui ..."
 	@http-server ./urlshortener.client/dist -p 5173
 
-deploy:
-	@echo "[I] Deploying app ..."
-	@docker compose up --build -d
+build-images:
+	@(export TAG=$(TAG) && docker-compose build)
+
+start: build-images
+	@echo "[I] Starting up app ..."
+	@(export TAG=$(TAG) && docker compose up -d)
 	@echo "[I] Deployment done"
