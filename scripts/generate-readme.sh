@@ -10,6 +10,7 @@ echo -e "## Challenges" >> ${README_FILE}
 
 find "${ROOT_DIR}" -mindepth 2 -maxdepth 2 -type f -name README.md \
     | while read readme_file; do
-        CONTENTS=$(cat ${readme_file} | sed -n '2,8p')
-        printf "1. ${CONTENTS}\n" >> ${README_FILE};
+        PROJECT_NAME=$(cat ${readme_file} | sed -n '2p')
+        CONTENTS=$(cat ${readme_file} | sed -n '3,8p' | xargs -I {} echo "\t{}")
+        printf "1. ${PROJECT_NAME}\n${CONTENTS}\n" >> ${README_FILE};
     done
