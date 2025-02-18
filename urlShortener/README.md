@@ -8,3 +8,4 @@ A service that lets a client submit a long URL which is then shortened to make i
 - **Testing:** nUnit, Moq
 
 ## Design
+## Running the app
