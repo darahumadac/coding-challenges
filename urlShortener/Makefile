@@ -52,10 +52,10 @@ run-package:
 	@http-server ./urlshortener.client/dist -p 5173
 
 build-images:
-	@(export TAG=$(TAG) && docker-compose build)
+	@(export TAG=$(TAG) && docker compose build)
 
 push-images:
-	@(export TAG=$(TAG) && docker-compose push)
+	@(export TAG=$(TAG) && docker compose push)
 	
 start:
 	@echo "[I] Starting up app ..."
