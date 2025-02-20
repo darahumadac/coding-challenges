@@ -17,15 +17,17 @@ pipeline {
         stage('Run Tests'){
             steps{
                 dir('urlshortener'){
-                    sh 'ls'
+                    sh 'make clean test'
                 }
             }
         }
-    }
 
-    post{
-        cleanup{
-            cleanWs()
+        stage('Build images'){
+            steps{
+                dir('urlshortener'){
+                    sh 'make build-images'
+                }
+            }
         }
     }
 }

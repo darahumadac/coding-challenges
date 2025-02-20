@@ -54,7 +54,10 @@ run-package:
 build-images:
 	@(export TAG=$(TAG) && docker-compose build)
 
-start: build-images
+push-images:
+	@(export TAG=$(TAG) && docker-compose push)
+	
+start:
 	@echo "[I] Starting up app ..."
 	@(export TAG=$(TAG) && docker compose up -d)
-	@echo "[I] Deployment done"
+	@echo "[I] App started"
