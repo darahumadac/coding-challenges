@@ -17,7 +17,7 @@ pipeline {
         stage('Run Tests'){
             steps{
                 dir('urlShortener'){
-                    sh 'make clean test'
+                    sh 'make test'
                 }
             }
         }
