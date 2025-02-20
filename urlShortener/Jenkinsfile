@@ -1,6 +1,5 @@
 pipeline {
-    agent any
-
+    agent none
     stages {
         stage('Install dependencies'){
             steps {
@@ -12,7 +11,12 @@ pipeline {
         }
 
         stage('Run Tests'){
+            agent { docker {image 'mcr.microsoft.com/dotnet/sdk:8.0'}}
             steps{
+                sh 'apt-get update \
+                    && apt-get install -y build-essential \
+                    && echo "Done installing dependencies"'
+                    
                 dir('urlShortener'){
                     sh 'make test'
                 }
@@ -20,7 +24,12 @@ pipeline {
         }
 
         stage('Build images'){
+            agent any
             steps{
+                sh 'apt-get update \
+                    && apt-get install -y build-essential \
+                    && echo "Done installing dependencies"'
+                    
                 dir('urlShortener'){
                     sh 'make build-images'
                 }
