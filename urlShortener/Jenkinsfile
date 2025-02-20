@@ -5,7 +5,7 @@ pipeline {
             agent { docker {image 'mcr.microsoft.com/dotnet/sdk:8.0'}}
             steps{    
                 dir('urlShortener'){
-                    sh 'dotnet test --logger html;LogFileName=TestResults-${env.BUILD_NUMBER}.html'
+                    sh 'dotnet test --logger "html;LogFileName=TestResults.html"'
                 }
             }
         }
