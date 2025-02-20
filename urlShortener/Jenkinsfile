@@ -16,7 +16,7 @@ pipeline {
 
         stage('Run Tests'){
             steps{
-                dir('urlshortener'){
+                dir('urlShortener'){
                     sh 'make clean test'
                 }
             }
@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build images'){
             steps{
-                dir('urlshortener'){
+                dir('urlShortener'){
                     sh 'make build-images'
                 }
             }
