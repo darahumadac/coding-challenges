@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
     stages {
         stage('Install dependencies'){
             steps {
@@ -29,7 +29,7 @@ pipeline {
                 sh 'apt-get update \
                     && apt-get install -y build-essential \
                     && echo "Done installing dependencies"'
-                    
+
                 dir('urlShortener'){
                     sh 'make build-images'
                 }
