@@ -1,15 +1,12 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:8.0'
-        }
-    }
+    agent any
 
     stages {
         stage('Install dependencies'){
             steps {
                 sh 'apt-get update \
                     && apt-get install -y build-essential \
+                    && apt-get install -y dotnet-sdk-8.0 \ 
                     && echo "Done installing dependencies"'
             }
         }
