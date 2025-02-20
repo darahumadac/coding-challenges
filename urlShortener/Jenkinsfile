@@ -6,7 +6,7 @@ pipeline {
             steps {
                 sh 'apt-get update \
                     && apt-get install -y build-essential \
-                    && apt-get install -y dotnet-sdk-8.0 \ 
+                    && apt-get install -y dotnet-sdk-8.0 \
                     && echo "Done installing dependencies"'
             }
         }
