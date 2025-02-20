@@ -3,26 +3,21 @@ pipeline {
     stages {
         stage('Run Tests'){
             agent { docker {image 'mcr.microsoft.com/dotnet/sdk:8.0'}}
-            steps{
-                sh 'apt-get update \
-                    && apt-get install -y build-essential \
-                    && echo "Done installing dependencies"'
-                    
+            steps{    
                 dir('urlShortener'){
-                    sh 'make test'
+                    sh 'dotnet test --logger html;LogFileName=TestResults-${env.BUILD_NUMBER}.html'
                 }
             }
         }
 
         stage('Build images'){
             agent any
+            environment {
+                TAG = '1.0.0'
+            }
             steps{
-                sh 'apt-get update \
-                    && apt-get install -y build-essential \
-                    && echo "Done installing dependencies"'
-
                 dir('urlShortener'){
-                    sh 'make build-images'
+                    sh 'docker compose build'
                 }
             }
         }
