@@ -79,6 +79,14 @@ var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("d
 var _db = new AppDbContext(options);
 ```
   - if in memory database is used for unit testing, cannot mock exceptions
+### Applying Migrations
+- https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli
+- for production: The recommended way to deploy migrations to a production database is by generating SQL scripts.
+```bash
+dotnet ef migrations script
+# with --idempotent: this internally checks which migrations have already been applied (via the migrations history table), and only apply missing ones. This is useful if you don't exactly know what the last migration applied to the database was, or if you are deploying to multiple databases that may each be at a different migration.
+dotnet ef migrations script --idempotent
+```
 
 ## Moq
 - requires the DbSet<T> and entities to be virtual, and needs a parameterless ctor so that it can mock entity framework dbcontext
@@ -230,12 +238,27 @@ dotnet run --environment Production
 ```
 
 
-## dotnet user-secrets
+## Storing Secrets / Passwords
+### Development environment
+#### dotnet user-secrets
 - `dotnet user-secrets init --project <projname>` --> this will generate a `<UserSecretsId>` property in the `.csproj` file
 - Location of the secrets.json file is in - `Secrets%APPDATA%\microsoft\UserSecrets\<userSecretsId>\secrets.json`
 - Then set the secret like `dotnet user-secrets set "mysecretkey" "myvalue" --project <projname>`
 - Access the secret by using .AddUserSecrets<T> in the configuration setup in Program.cs, and inject it to the class, or call the `builder.Configuration["mysecretkey"]`
+#### .env file
+- *To add details*
 
+### Use Environment Variables
+- `builder.Configuration.AddEnvironmentVariables(prefix: "MyAppPrefix_")`
+  - `__` --> hierarchicy indicator
+- Drawbacks:
+  - Must configure manually in host machine
+  - Shared across processes i.e. any application can see
+  - Might not be encrypted
+
+### Production environment
+- Can use [Environment Variables](#use-environment-variables) but must also take note of data encryption at rest
+- Recommended approach is to use an *online key vault / key management service*
 
 ## REST Client
 - declare variables as `@host=http://localhost:8080`
@@ -413,6 +436,38 @@ app.UseCors("policyName");
 
 ## Docker
 - use cmder when using docker cli, rather than Git bash to avoid issues with paths
+- When running services via `docker compose`, **do not use localhost**. instead, **use 127.0.0.1**
+```bash
+# In appsettings.json, the connection string must use 127.0.0.1 for localhost. cannot use localhost directly because docker does not recognize localhost
+docker compose up -d --no-recreate sql-server redis-server
+```
+- 
+### Dockerfile
+- Always keep `cache layering` in mind, moving layers that frequently change towards the end (source code), and those that do not change frequently (e.g. dependencies) towards the start
+- always add layer for install dependencies first before the layer for the source code
+- `CMD` vs `ENTRYPOINT`
+### docker compose
+- always set `container_name` for the services
+- for sql server container:
+  - configure `MSSQL_SA_PASSWORD` for username `SA`. The password considers quotes literally. Do not wrap the password in quotes. For example, in `MSSQL_SA_PASSWORD='sQLs3rverRpAssw0rD!!'`, the password is `'sQLs3rverRpAssw0rD!!'` instead of `sQLs3rverRpAssw0rD!!`
+  - connecting to SQL Server via SSMS:
+    -   servername: localhost
+    -   authentication: SQL Server authentication
+    -   login: SA
+    -   password: <password_set_in_MSSQL_SA_PASSWORD>
+    -   encryption mandatory, and check the trust server certificate
+  - Running sql commands inside container:
+    - using [sqlcmd utility](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility?view=sql-server-ver16&tabs=go%2Cwindows&pivots=cs1-bash)
+  - `Secrets`
+  - **Environment Variables**
+    - For development environment - can be set by having a `.env` file
+
+### Configuring SQL Server Database in Docker
+- Create a setup bash script and run it inside the container using the `sqlcmd` utility
+  - Run the setup script as a background task with a long login timeout because sql server needs to be started first for it to run, and sqlserver cannot be ran in the background in the container (see [setupdb.sh](./urlshortener.service/Scripts/setupdb.sh))
+
+### Versioning, Pushing, Deploying Images
+- must build image and deploy to a container registry (e.g. dockerhub)
 
 ## Nginx
 - Deploy the frontend using nginx
@@ -430,3 +485,90 @@ docker run --name nginx -v <your app dir>:/usr/share/nginx/html -v nginx.conf:/e
   }
   
 ```
+
+## Git
+- Tagging a repository
+- add tag with annotation and push the tag
+```bash
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin v1.0.0
+```
+- delete a tag
+```bash
+git tag -d v1.0.0
+```
+
+---
+
+## Jenkins
+### Resources
+https://www.docker.com/blog/docker-and-jenkins-build-robust-ci-cd-pipelines/
+### Creating a Jenkins Agent using Docker
+- Generate an SSH Key pair. Running the command below will generate 2 files: 
+  - private key: `jenkins_docker_agent_key` --> this will be used in configuring Jenkins server (via credentials)
+  - public key: `jenkins_docker_agent_key.pub` --> this will be used in configuring the build agent 
+```bash
+# optional: enter a passphrase during key generation. this can be left blank
+ssh-keygen -f jenkins_docker_agent_key
+```
+- Configure the Jenkins server
+  - go to `Manage Jenkins` > `Credentials`
+  - Kind: SSH username with private key
+  - ID: Jenkins
+  - Username: jenkins
+  - Enter the private key
+    - to get the private key, copy the contents from the private key file
+  - Passphrase: this will be the same passphrase used to generate the key files
+- Configure the Jenkins agent using Docker using the `jenkins/ssh-agent:jdk17` image. 
+  - It is important to configure the `network` for the container to be the same as the Jenkins server container network
+```bash
+docker run -d --rm --name=docker_agent --network jenkins -p 22:22 -e "JENKINS_AGENT_SSH_PUBKEY=<public_key_file contents here>" jenkins/ssh-agent:jdk17
+```
+### Jenkinsfile
+- Must run jenkins as root user so that dependencies can be installed using `apt-get` using `docker:dind` image
+```yml
+# in docker compose.yml
+my-jenkins:
+  user: "0:0"
+  privileged: true
+```
+- When using `pipeline` project and using `Pipeline script from SCM`, ensure that you run the command below in jenkins server to resolve any git checkout issue:
+```bash
+git config --global --add safe.directory "*"
+```
+
+## TODO
+- [x] Add logic for shortening url
+- [x] Add unit tests
+- [x] Add sql server / ef for db
+- [x] Add logging
+- [x] Add redis database for cache
+- [x] Create UI using React and CSS
+- [x] Setup log search and analysis server - using Seq 
+- [x] Deploy app
+  - [x] Deploy web api to IIS on a windows server
+  - [x] Deploy react frontend on nginx
+  - [x] Containerize the app using Docker
+    - [x] Services: redis, sql server, nginx, seq, urlshortener service
+    - [ ] How to store secrets
+      - [x] Can use environment variables --> after configuring the system environment variables, restart machine / vs code. Otherwise, use setx to configure environment variables then no need to restart
+      - [ ] Use secrets for development only
+      - [ ] Use key vault for production
+    - [x] Use configuration to avoid rebuilding docker image
+    - [x] Change the dev environment connection string to environment variables
+      - [x] Built the connection string from env variables
+    - [ ] Data Protection
+      - [ ] SQL Server - disable user SA and create a new login for the app
+      - [ ] Encrypt passwords if storing in environment variables
+    - [x] Update makefile for development environment
+    - [ ] Setup pushing logs to seq
+    - [ ] Configure healthchecks for services
+    - [ ] Configure alerting for services
+      - [ ] Use Prometheus - for alerting and monitoring metrics
+      - [ ] Use Grafana - for creating dashboards to show metrics
+      - [ ] Use Kibana / Seq - for logs  
+- [ ] Update notes on things that I've learned 
+- [ ] Create a CI/CD pipeline
+- [ ] Add automated UI testing
+- [ ] Add rate limiting
+- [ ] Add circuit-breaker
