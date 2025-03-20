@@ -1,0 +1,48 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using approvalworkflow.Database
+@inject SignInManager<User> SignInManager;
+@inject UserManager<User> UserManager
+
+@{
+    
+    ViewData["Title"] = SignInManager.IsSignedIn(User) ? "Welcome": "Hello";
+}
+
+<div class="text-center">
+    <h1 class="display-6 title">Request Dashboard</h1>
+    <div class="menu-options">
+        <div class="menu-option">
+            <i class="fa-solid fa-circle-plus text-success"></i>
+            <a  asp-controller="Request" asp-action="Create" class="text-primary">Submit a Request</a>
+        </div>
+    </div>
+    @* List of Submitted Requests *@
+    <table class="table table-hover">
+        <thead>
+            <th scope="col">Request Id</th>
+            <th scope="col">Title</th>
+            <th scope="col">Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Date Submitted</th>
+            <th scope="col"></th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Hardcoded Request Title</td>
+                <td>Hardcoded Request Type</td>
+                <td>Hardcoded Request Status</td>
+                <td>Hardcoded Request Date</td>
+                <td>
+                    <a asp-controller="Request" asp-action="View" asp-route-id="1" class="btn btn-outline-primary btn-sm">View</a>
+                    <a asp-controller="Request" asp-action="Edit" asp-route-id="1" class="btn btn-outline-warning btn-sm">Edit</a>
+                    <a asp-controller="Request" asp-action="Delete" asp-route-id="1" class="btn btn-outline-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+    @* else, show a message no requests *@
+    
+</div>
+    
