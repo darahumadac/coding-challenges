@@ -242,7 +242,7 @@ dotnet run --environment Production
 ### Development environment
 #### dotnet user-secrets
 - `dotnet user-secrets init --project <projname>` --> this will generate a `<UserSecretsId>` property in the `.csproj` file
-- Location of the secrets.json file is in - `Secrets%APPDATA%\microsoft\UserSecrets\<userSecretsId>\secrets.json`
+- Location of the secrets.json file is in - `%APPDATA%\microsoft\UserSecrets\<userSecretsId>\secrets.json`
 - Then set the secret like `dotnet user-secrets set "mysecretkey" "myvalue" --project <projname>`
 - Access the secret by using .AddUserSecrets<T> in the configuration setup in Program.cs, and inject it to the class, or call the `builder.Configuration["mysecretkey"]`
 #### .env file
