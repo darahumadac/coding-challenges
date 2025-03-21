@@ -7,7 +7,11 @@ namespace approvalworkflow.Database;
 
 public class UserDbContext : IdentityDbContext<User>
 {
-    public UserDbContext(DbContextOptions options) : base(options) { }
+    private readonly IConfiguration _config;
+    public UserDbContext(DbContextOptions options, IConfiguration config) : base(options)
+    {
+        _config = config;
+    }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -26,17 +30,46 @@ public class UserDbContext : IdentityDbContext<User>
         base.OnConfiguring(optionsBuilder);
         optionsBuilder.UseSeeding((dbContext, _) =>
         {
+
+            var pwHasher = new PasswordHasher<User>();
+
             //seed users
             var users = dbContext.Set<User>();
             if (users.IsNullOrEmpty())
             {
+                var defaultPassword = _config["UsersDb:Users:DefaultPassword"] ??
+                                throw new InvalidOperationException("No default user password set");
+                //seed requestors and approvers
                 for (var i = 0; i < 5; i++)
                 {
                     string role = i < 2 ? "Requestor" : "Approver";
-                    users.Add(new User { UserName = $"Test_{role}_{i + 1}", FirstName = "Test", LastName = $"{role} {i + 1}" });
+                    var user = new User
+                    {
+                        UserName = $"Test_{role}_{i + 1}",
+                        FirstName = "Test",
+                        LastName = $"{role} {i + 1}",
+                        Email = $"test{role.ToLower()}_{i + 1}@test.test",
+                        EmailConfirmed = true
+                    };
+                    user.PasswordHash = pwHasher.HashPassword(user, defaultPassword);
+                    users.Add(user);
                 }
-                users.Add(new User { UserName = "Admin", FirstName = "Admin", LastName = "Admin" });
+
+                //seed admin
+                var adminPassword = _config["UsersDb:Admin:DefaultPassword"] ??
+                                    throw new InvalidOperationException("No default admin password set");
+                var admin = new User
+                {
+                    UserName = "Admin",
+                    FirstName = "Admin",
+                    LastName = "Admin",
+                    Email = "admin@test.test",
+                    EmailConfirmed = true,
+                };
+                admin.PasswordHash = pwHasher.HashPassword(admin, adminPassword);
+                users.Add(admin);
             }
+
             //seed roles
             var roles = dbContext.Set<IdentityRole>();
             if (roles.IsNullOrEmpty())
