@@ -85,6 +85,10 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
             [Required]
             [EmailAddress]
             public string Email { get; set; }
+            [Required]
+            public string FirstName { get; set; }
+            [Required]
+            public string LastName { get; set; }
         }
         
         public IActionResult OnGet() => RedirectToPage("./Login");
@@ -128,10 +132,23 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
                 // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
+                var firstName = "User";
+                var lastName = new Random().Next().ToString();
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
+                    if(info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
+                    {
+                        firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
+                    }
+                    if(info.Principal.HasClaim(c => c.Type == ClaimTypes.Surname))
+                    {
+                        lastName = info.Principal.FindFirstValue(ClaimTypes.Surname);   
+                    }
+
                     Input = new InputModel
                     {
+                        FirstName = firstName,
+                        LastName = lastName,
                         Email = info.Principal.FindFirstValue(ClaimTypes.Email)
                     };
                 }
@@ -160,6 +177,8 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, AppRoles.Requestor.ToString());
+
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
@@ -202,7 +221,10 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
         {
             try
             {
-                return Activator.CreateInstance<User>();
+                return new User{
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                };
             }
             catch
             {

@@ -120,6 +120,42 @@ https://learn.microsoft.com/en-us/aspnet/core/security/authentication/customize-
 - The `OnConfiguring` method always runs during a migration
 
 
+### External Login Providers
+#### Google
+Steps: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social/google-logins?view=aspnetcore-9.0
+- In the google console, create a new project for your app and go through the steps
+- Add the **Authorized Redirect URI** for your app: http://localhost:5027/signin-oidc
+- Take note of the ClientId and ClientSecret and store them in the user-secrets when working in dev environment
+```bash
+# initialize user-secrets
+dotnet user-secrets init
+# set the secrets
+dotnet user-secrets set "Authentication:Google:ClientId" "<client-id>"
+dotnet user-secrets set "Authentication:Google:ClientSecret" "<client-secret>"
+```
+- Configure Google in `AddAuthentication`
+```c#
+// configure external login providers
+builder.Services.AddAuthentication()
+                .AddGoogleOpenIdConnect(options =>
+                {
+                    //set the nonce cookie
+                    options.NonceCookie = new CookieBuilder
+                    {
+                        Name = "GoogleAuthCookie", 
+                        SameSite = SameSiteMode.None, 
+                        SecurePolicy = CookieSecurePolicy.Always
+                    };
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+                    // options.ProtocolValidator.RequireNonce = false;//this works but don't use this
+                });
+
+//then use Authentication
+app.UseAuthentication();
+```
+
+
 ### Code snippets
 - For setting PasswordHash using `PasswordHasher<TUser>`
 ```c#
