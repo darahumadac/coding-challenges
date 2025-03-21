@@ -28,7 +28,6 @@ public class UserDbContext : IdentityDbContext<User>
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);
         optionsBuilder.UseSeeding((dbContext, _) =>
         {
             var normalize = (string input) => input.ToUpper();
@@ -92,7 +91,7 @@ public class UserDbContext : IdentityDbContext<User>
             if (roles.IsNullOrEmpty())
             {
                 var appRoles = Enum.GetNames(typeof(AppRoles))
-                                .Select(r => new IdentityRole(r)).ToArray();
+                                .Select(r => new IdentityRole{ Name = r, NormalizedName = r.ToUpper() }).ToArray();
                 roles.AddRange(appRoles);
             }
 
