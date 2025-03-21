@@ -1,3 +1,4 @@
+using System.Runtime;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -30,44 +31,60 @@ public class UserDbContext : IdentityDbContext<User>
         base.OnConfiguring(optionsBuilder);
         optionsBuilder.UseSeeding((dbContext, _) =>
         {
-
+            var normalize = (string input) => input.ToUpper();
+            var generateEmail = (string input) => $"{input}@test.test";
+            var generateUsername = (params string[] args) => string.Join("_", args).ToLower().TrimEnd('_');
             var pwHasher = new PasswordHasher<User>();
+            
+            var createUser = (int i) => {
+
+                const int APPROVER = 2;
+                const int ADMIN = 5;
+                const string ADMIN_ROLE = "Admin";
+
+                var role = "Approver";
+                var firstName = "Test";
+                if(i < APPROVER){
+                    role = "Requestor";
+                }
+                var lastName = $"{role}_{i+1}";
+                
+                if(i == ADMIN){
+                    role = ADMIN_ROLE;
+                    firstName = ADMIN_ROLE;
+                    lastName = string.Empty;
+                }
+
+                var username = generateUsername(firstName, lastName);
+                var email = generateEmail(username);
+                
+                var key = i != ADMIN ? "Users" : ADMIN_ROLE;
+                var defaultPassword = _config[$"UsersDb:{key}:DefaultPassword"] ??
+                                throw new InvalidOperationException($"No default {key.ToLower()} password set");
+                
+                var user = new User{
+                    UserName = username,
+                    NormalizedUserName = normalize(username),
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    NormalizedEmail = normalize(email),
+                    EmailConfirmed = true
+                };
+                user.PasswordHash = pwHasher.HashPassword(user, defaultPassword);
+
+                return user;
+            };
 
             //seed users
             var users = dbContext.Set<User>();
             if (users.IsNullOrEmpty())
-            {
-                var defaultPassword = _config["UsersDb:Users:DefaultPassword"] ??
-                                throw new InvalidOperationException("No default user password set");
+            {   
                 //seed requestors and approvers
-                for (var i = 0; i < 5; i++)
+                for (var i = 0; i < 6; i++)
                 {
-                    string role = i < 2 ? "Requestor" : "Approver";
-                    var user = new User
-                    {
-                        UserName = $"Test_{role}_{i + 1}",
-                        FirstName = "Test",
-                        LastName = $"{role} {i + 1}",
-                        Email = $"test{role.ToLower()}_{i + 1}@test.test",
-                        EmailConfirmed = true
-                    };
-                    user.PasswordHash = pwHasher.HashPassword(user, defaultPassword);
-                    users.Add(user);
+                    users.Add(createUser(i));
                 }
-
-                //seed admin
-                var adminPassword = _config["UsersDb:Admin:DefaultPassword"] ??
-                                    throw new InvalidOperationException("No default admin password set");
-                var admin = new User
-                {
-                    UserName = "Admin",
-                    FirstName = "Admin",
-                    LastName = "Admin",
-                    Email = "admin@test.test",
-                    EmailConfirmed = true,
-                };
-                admin.PasswordHash = pwHasher.HashPassword(admin, adminPassword);
-                users.Add(admin);
             }
 
             //seed roles
