@@ -1,5 +1,7 @@
 using approvalworkflow.Database;
 using approvalworkflow.Services;
+using Google.Apis.Auth.AspNetCore3;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +19,19 @@ builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<UserDbContext>()
                 .AddDefaultUI()
                 .AddApiEndpoints(); //configure identity apis
+
+// //configure external login providers
+// builder.Services.AddAuthentication(options =>
+//                 {
+//                     options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//                 })
+//                 .AddCookie()
+//                 .AddGoogleOpenIdConnect(options =>
+//                 {
+//                     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+//                     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//                 });
 
 //configure email sender
 builder.Services.AddTransient<IEmailSender, MockEmailSender>();
@@ -48,6 +63,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+// app.UseAuthentication();
 app.UseAuthorization();
 //make the identity api endpoints available
 app.MapIdentityApi<User>();
