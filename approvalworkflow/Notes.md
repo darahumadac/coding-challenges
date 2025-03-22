@@ -155,6 +155,72 @@ builder.Services.AddAuthentication()
 app.UseAuthentication();
 ```
 
+### Routing
+- Adding the `[Route(path/to/{routeValue})]` attribute or just specifying the route template in HTTP attributes will make it appear in swagger / swashbuckle
+- The attributes below are mutually exclusive:
+    - `asp-route`
+    - `asp-controller`, `asp-action`
+    - `asp-page`, `asp-page-handler`
+
+- Action method names must always match the View filename
+- Views are searched in the  following order: `Views/[Controller] directory` -> `Views/Shared directory` -> `Pages/Shared directory`. The view filename searched is the action name
+- `asp-route-id` - binds route value
+
+### Model Binding
+https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-9.0#binding-source-parameter-inference
+- `[FromQuery]` - Gets values from the query string.
+- `[FromRoute]` - Gets values from route data.
+- `[FromForm]` - Gets values from posted form fields.
+- `[FromBody]` - Gets values from the request body.
+- `[FromHeader]` - Gets values from HTTP headers.
+
+#### Tag Helpers
+https://learn.microsoft.com/en-us/aspnet/core/mvc/views/working-with-forms?view=aspnetcore-9.0
+```html
+
+<a asp-controller="Request" asp-action="Edit" asp-route-id="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
+
+<a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
+
+<a asp-route-ViewRequest asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
+
+```
+```cshtml
+@Url.Action("action_name", "controller_name")
+@Url.Action("action_name", "controller_name", route_value)
+@Url.RouteUrl("route_name")
+```
+
+
+
+#### Showing modal using partial view
+```c#
+    [HttpGet("ConfirmDelete/{requestId}")]
+    public IActionResult _ConfirmDelete(int requestId)
+    {
+        return PartialView("_ConfirmDeletePartial", requestId);
+    }
+```
+```html
+<div id="modal-container">
+    <!-- to be populated by the ajax call -->
+</div>
+```
+```js
+ //call ajax for loading partial view
+$.ajax({
+    method:"GET",
+    url:`ConfirmDelete/${e.target.id}`,
+    success: function(data){
+        $('#modal-container').html(data);
+        $('#confirmDeleteModal').modal('toggle');
+    },
+    error: function(){
+        alert('error loading modal');
+    }
+});
+```
+
 
 ### Code snippets
 - For setting PasswordHash using `PasswordHasher<TUser>`
