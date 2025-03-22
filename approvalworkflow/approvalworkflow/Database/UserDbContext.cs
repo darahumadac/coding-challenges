@@ -34,8 +34,9 @@ public class UserDbContext : IdentityDbContext<User>
             var generateEmail = (string input) => $"{input}@test.test";
             var generateUsername = (params string[] args) => string.Join("_", args).ToLower().TrimEnd('_');
             var pwHasher = new PasswordHasher<User>();
-            
-            var createUser = (int i) => {
+
+            var createUser = (int i) =>
+            {
 
                 const int APPROVER = 2;
                 const int ADMIN = 5;
@@ -43,12 +44,14 @@ public class UserDbContext : IdentityDbContext<User>
 
                 var role = "Approver";
                 var firstName = "Test";
-                if(i < APPROVER){
+                if (i < APPROVER)
+                {
                     role = "Requestor";
                 }
-                var lastName = $"{role}_{i+1}";
-                
-                if(i == ADMIN){
+                var lastName = $"{role}_{i + 1}";
+
+                if (i == ADMIN)
+                {
                     role = ADMIN_ROLE;
                     firstName = ADMIN_ROLE;
                     lastName = string.Empty;
@@ -56,12 +59,13 @@ public class UserDbContext : IdentityDbContext<User>
 
                 var username = generateUsername(firstName, lastName);
                 var email = generateEmail(username);
-                
+
                 var key = i != ADMIN ? "Users" : ADMIN_ROLE;
                 var defaultPassword = _config[$"UsersDb:{key}:DefaultPassword"] ??
                                 throw new InvalidOperationException($"No default {key.ToLower()} password set");
-                
-                var user = new User{
+
+                var user = new User
+                {
                     UserName = username,
                     NormalizedUserName = normalize(username),
                     FirstName = firstName,
@@ -78,7 +82,7 @@ public class UserDbContext : IdentityDbContext<User>
             //seed users
             var users = dbContext.Set<User>();
             if (users.IsNullOrEmpty())
-            {   
+            {
                 //seed requestors and approvers
                 for (var i = 0; i < 6; i++)
                 {
@@ -91,7 +95,7 @@ public class UserDbContext : IdentityDbContext<User>
             if (roles.IsNullOrEmpty())
             {
                 var appRoles = Enum.GetNames(typeof(AppRoles))
-                                .Select(r => new IdentityRole{ Name = r, NormalizedName = r.ToUpper() }).ToArray();
+                                .Select(r => new IdentityRole { Name = r, NormalizedName = r.ToUpper() }).ToArray();
                 roles.AddRange(appRoles);
             }
 
