@@ -2,7 +2,8 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using approvalworkflow.Models;
 using Microsoft.AspNetCore.Authorization;
-using approvalworkflow.Database;
+using approvalworkflow.Services;
+using System.Threading.Tasks;
 
 namespace approvalworkflow.Controllers;
 
@@ -10,23 +11,32 @@ namespace approvalworkflow.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IRepositoryService<UserRequest> _requestService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest> requestService)
     {
         _logger = logger;
+        _requestService = requestService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var requests = await _requestService.GetRecordsByUserAsync(User);
+        return View(requests);
     }
 
     [Authorize(Roles = "Approver")]
-    public IActionResult Approval()
+    public async Task<IActionResult> Approval()
     {
-        return View();
+        var forApproval = await _requestService.GetRecordsForUserAsync(User);
+        return View(forApproval);
     }
 
+    [HttpGet("ConfirmDelete/{requestId}")]
+    public IActionResult _ConfirmDelete(int requestId)
+    {
+        return PartialView("_ConfirmDeletePartial", requestId);
+    }
     public IActionResult Privacy()
     {
         return View();

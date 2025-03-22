@@ -120,7 +120,7 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
                 {
                     if (User.IsInRole(AppRoles.Approver.ToString()))
                     {
-                        returnUrl = Url.Content("/Approval");
+                        returnUrl = Url.Content("/Home/Approval");
                     }
                     else if (User.IsInRole(AppRoles.Admin.ToString()))
                     {

@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using approvalworkflow.Database
+@inject SignInManager<User> SignInManager;
+@inject UserManager<User> UserManager;
+@model List<UserRequest>;
+
+@{
+    
+    ViewData["Title"] = SignInManager.IsSignedIn(User) ? "Welcome": "Hello";
+}
+
+<div class="text-center">
+    <h1 class="display-6 title">Approval Dashboard</h1>
+    <table class="table table-hover">
+        <thead>
+            <th scope="col">Request Id</th>
+            <th scope="col">Title</th>
+            <th scope="col">Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Date Created</th>
+            <th scope="col">Date Updated</th>
+            <th scope="col"></th>
+        </thead>
+        <tbody>
+            @if(Model.Count() == 0)
+            {
+                <tr>
+                    <td colspan="7">
+                        No records for Approval
+                    </td>
+                </tr>
+            }
+            @foreach(var request in Model)
+            {
+                <tr>
+                    <td>@request.Id</td>
+                    <td>@request.Title</td>
+                    <td>@request.Type</td>
+                    <td>@request.Status</td>
+                    <td>@request.CreatedDate</td>
+                    <td>@request.UpdatedDate</td>
+                    <td>
+                        <a asp-controller="Request" asp-action="Approve" asp-route-id="@request.Id" class="btn btn-outline-success btn-sm">Approve</a>
+                        <a asp-controller="Request" asp-action="Reject" asp-route-id="@request.Id" class="btn btn-outline-danger btn-sm">Reject</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+</div>
+    
