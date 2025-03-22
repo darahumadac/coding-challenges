@@ -90,7 +90,7 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
             [Required]
             public string LastName { get; set; }
         }
-        
+
         public IActionResult OnGet() => RedirectToPage("./Login");
 
         public IActionResult OnPost(string provider, string returnUrl = null)
@@ -136,13 +136,13 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
                 var lastName = new Random().Next().ToString();
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
-                    if(info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
                     {
                         firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
                     }
-                    if(info.Principal.HasClaim(c => c.Type == ClaimTypes.Surname))
+                    if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Surname))
                     {
-                        lastName = info.Principal.FindFirstValue(ClaimTypes.Surname);   
+                        lastName = info.Principal.FindFirstValue(ClaimTypes.Surname);
                     }
 
                     Input = new InputModel
@@ -221,7 +221,8 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
         {
             try
             {
-                return new User{
+                return new User
+                {
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
                 };
