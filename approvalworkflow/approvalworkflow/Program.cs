@@ -1,4 +1,5 @@
 using approvalworkflow.Database;
+using approvalworkflow.Models;
 using approvalworkflow.Services;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -29,8 +30,8 @@ builder.Services.AddAuthentication()
                     //set the nonce cookie
                     options.NonceCookie = new CookieBuilder
                     {
-                        Name = "GoogleAuthCookie", 
-                        SameSite = SameSiteMode.None, 
+                        Name = "GoogleAuthCookie",
+                        SameSite = SameSiteMode.None,
                         SecurePolicy = CookieSecurePolicy.Always
                     };
                     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -41,11 +42,14 @@ builder.Services.AddAuthentication()
 //configure email sender
 builder.Services.AddTransient<IEmailSender, MockEmailSender>();
 
+builder.Services.AddScoped<IRepositoryService<UserRequest>, RequestService>();
+
 
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddOpenApi();
 }
 
 var app = builder.Build();
