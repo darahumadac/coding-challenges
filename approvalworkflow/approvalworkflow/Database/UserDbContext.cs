@@ -9,7 +9,7 @@ namespace approvalworkflow.Database;
 public class UserDbContext : IdentityDbContext<User>
 {
     private readonly IConfiguration _config;
-    public UserDbContext(DbContextOptions options, IConfiguration config) : base(options)
+    public UserDbContext(DbContextOptions<UserDbContext> options, IConfiguration config) : base(options)
     {
         _config = config;
     }

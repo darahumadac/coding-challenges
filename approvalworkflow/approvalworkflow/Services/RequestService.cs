@@ -11,12 +11,13 @@ namespace approvalworkflow.Services;
 public class RequestService : IRepositoryService<UserRequest>
 {
     private readonly UserManager<User> _userManager;
+    private readonly AppDbContext _dbContext;
     private readonly User UNKNOWN_USER = new();
     
-    public RequestService(UserManager<User> userManager)
+    public RequestService(UserManager<User> userManager, AppDbContext dbContext)
     {
-        //TODO: add app db here
         _userManager = userManager;
+        _dbContext = dbContext;
 
     }
 
@@ -31,12 +32,12 @@ public class RequestService : IRepositoryService<UserRequest>
                 return new UserRequest{
                     Id = i, 
                     Title = $"Service Request - Need help #{i} with {reqType.Humanize().Titleize()} request", 
-                    Type = reqType,
+                    Type = new RequestCategory(){RequestType = reqType, RequiredApproverCount = 2},
                     Status = RequestStatus.Pending,
-                    CreatedBy = user,
+                    CreatedBy = new AppUser{FirstName = user.FirstName, LastName = user.LastName},
                     CreatedDate = DateTime.Now.AddDays(random.Next(-5, -3)),
                     UpdatedDate = DateTime.Now.AddDays(random.Next(-2, 0)),
-                    Approvers = (List<User>)approvers
+                    Approvals = Enumerable.Range(1, 2).Select(a => new RequestApproval{Approver = new AppUser{FirstName = "Approver 1"}}).ToList()
                 };
             }).ToList();    
 
@@ -46,6 +47,7 @@ public class RequestService : IRepositoryService<UserRequest>
     public async Task<List<UserRequest>> GetRecordsForUserAsync(ClaimsPrincipal currentUser)
     {
         var requestors = await _userManager.GetUsersInRoleAsync(AppRoles.Requestor.ToString());
+        var requestor = requestors.First() ?? UNKNOWN_USER;
         var random = new Random();
         var reqType = currentUser.IsInRole(AppRoles.Admin.ToString()) ? RequestType.RoleChange : RequestType.Service;
         var forApproval = Enumerable.Range(1,5)
@@ -53,9 +55,9 @@ public class RequestService : IRepositoryService<UserRequest>
                         return new UserRequest{
                             Id = i,
                              Title = $"Service Request - Need help #{i} with {reqType.Humanize().Titleize()} request", 
-                            Type = reqType, 
+                            Type = new RequestCategory(){RequestType = reqType, RequiredApproverCount = 2}, 
                             Status = RequestStatus.Pending,
-                            CreatedBy = requestors != null ? requestors.First() : UNKNOWN_USER,
+                            CreatedBy = new AppUser{FirstName = requestor.FirstName, LastName = requestor.LastName},
                             CreatedDate = DateTime.Now.AddDays(random.Next(-5, -3)),
                             UpdatedDate = DateTime.Now.AddDays(random.Next(-2, 0)),
                         };
