@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace approvalworkflow.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Requestor, Approver")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -37,6 +37,8 @@ public class HomeController : Controller
     {
         return PartialView("_ConfirmDeletePartial", requestId);
     }
+
+    [AllowAnonymous]
     public IActionResult Privacy()
     {
         return View();

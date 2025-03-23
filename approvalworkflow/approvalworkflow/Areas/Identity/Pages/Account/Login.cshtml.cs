@@ -124,7 +124,7 @@ namespace approvalworkflow.Areas.Identity.Pages.Account
                     }
                     else if (User.IsInRole(AppRoles.Admin.ToString()))
                     {
-                        returnUrl = Url.Content("/Role");
+                        returnUrl = Url.Content("/Manage");
                     }
 
                     _logger.LogInformation("User logged in.");

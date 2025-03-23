@@ -64,3 +64,30 @@ body {
 .title {
   height: 10vh;
 }
+
+.task-options{
+  display: flex;
+  flex-direction: row;
+  height: 50vh;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.task-option {
+  width: 18rem;
+  height: 18rem;
+  text-align: center;
+  padding: 30px 30px;
+  margin: 0px 10px;
+  cursor: pointer;
+}
+
+.card-link{
+  text-decoration: none;
+}
+
+.task-option:hover{
+  background-color: rgb(31, 121, 204);
+  color: white;
+}
+

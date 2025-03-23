@@ -1,0 +1,25 @@
+@{
+    var options = new Dictionary<string, string[]>(){
+        {"Users", ["users", "Configure user supervisors, perform role changes, or remove users"]},
+        {"Requests", ["file", "Delete user requests"]},
+    };
+}
+<div class="task-options">
+    @foreach(var option in options.Keys.OrderByDescending(k => k))
+    {
+        <a class="card-link" asp-controller="Admin" asp-action="@option">
+            <div class="card task-option">
+                <i class="card-img-top fa-solid fa-5x fa-@options[option][0]"></i>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Manage @option
+                    </h5>
+                        <p class="card-text">@options[option][1]</p>
+
+                </div>
+            </div>
+        </a>
+    }
+</div>
+
+
