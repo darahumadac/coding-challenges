@@ -10,10 +10,10 @@ namespace approvalworkflow.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly IRepositoryService<UserRequest, RequestCategory> _requestService;
+    private readonly IRepositoryService<UserRequest, RequestApproval> _requestService;
     private readonly AppUserService _appUserService;
 
-    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest, RequestCategory> requestService, AppUserService appUserService)
+    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest, RequestApproval> requestService, AppUserService appUserService)
     {
         _logger = logger;
         _requestService = requestService;

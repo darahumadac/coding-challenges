@@ -5,13 +5,13 @@ namespace approvalworkflow.Services;
 
 public class UIService
 {
-    private readonly IRepositoryService<UserRequest, RequestCategory> _requestService;
+    private readonly ILookupService<RequestCategory> _categoryService;
 
-    public UIService(IRepositoryService<UserRequest, RequestCategory> requestService)
+    public UIService(ILookupService<RequestCategory> categoryService)
     {
-        _requestService = requestService;
+        _categoryService = categoryService;
     }
 
-    public IEnumerable<SelectListItem> RequestCategories => _requestService.RequestCategories()
+    public IEnumerable<SelectListItem> RequestCategories => _categoryService.GetRecords()
             .Select(r => new SelectListItem { Text = r.ToString(), Value = r.Id.ToString() });
 }

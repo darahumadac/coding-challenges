@@ -41,9 +41,10 @@ builder.Services.AddAuthentication()
 //configure email sender
 builder.Services.AddTransient<IEmailSender, MockEmailSender>();
 
-builder.Services.AddScoped<IRepositoryService<UserRequest, RequestCategory>, RequestService>();
+builder.Services.AddScoped<IRepositoryService<UserRequest,RequestApproval>, RequestService>();
 builder.Services.AddScoped<AppUserService>();
 builder.Services.AddScoped<UIService>();
+builder.Services.AddScoped<ILookupService<RequestCategory>, RequestCategoryService>();
 
 
 if (builder.Environment.IsDevelopment())

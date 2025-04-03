@@ -1,8 +1,9 @@
-﻿@using Microsoft.AspNetCore.Identity;
+﻿@using Microsoft.AspNetCore.Identity
 @using approvalworkflow.Database
-@inject SignInManager<User> SignInManager;
-@inject UserManager<User> UserManager;
-@model List<UserRequest>;
+@using  approvalworkflow.Enums
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@model List<RequestApproval>
 
 @{
     
@@ -31,19 +32,20 @@
                     </td>
                 </tr>
             }
-            @foreach(var request in Model)
+            @foreach(var approval in Model)
             {
+                var request = approval.Request;
                 <tr>
-                    <td>@request.Id</td>
+                    <td>@approval.RequestId</td>
                     <td>@request.Title</td>
                     <td>@request.Type</td>
                     <td>@request.CreatedBy.FullName</td>
-                    <td>@request.Approvals</td>
+                    <td>@approval.Status</td>
                     <td>@request.CreatedDate.AddHours(8)</td>
                     <td>@request.UpdatedDate.AddHours(8)</td>
                     <td>
-                        <a asp-controller="Request" asp-action="Approve" asp-route-id="@request.Id" class="btn btn-outline-success btn-sm">Approve</a>
-                        <a asp-controller="Request" asp-action="Reject" asp-route-id="@request.Id" class="btn btn-outline-danger btn-sm">Reject</a>
+                        <a asp-controller="Request" asp-action="Approve" asp-route-id="@approval.Id" class="btn btn-outline-success btn-sm">Approve</a>
+                        <a asp-controller="Request" asp-action="Reject" asp-route-id="@approval.Id" class="btn btn-outline-danger btn-sm">Reject</a>
                     </td>
                 </tr>
             }

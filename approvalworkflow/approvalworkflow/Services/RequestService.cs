@@ -9,21 +9,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace approvalworkflow.Services;
 
-public class RequestService : IRepositoryService<UserRequest, RequestCategory>
+public class RequestService : IRepositoryService<UserRequest, RequestApproval>
 {
-    private readonly UserManager<User> _userManager;
     private readonly AppDbContext _dbContext;
-
     private readonly ILogger<RequestService> _logger;
     private readonly AppUserService _appUserService;
+    private readonly ILookupService<RequestCategory> _requestCategoryService;
     private RequestCategory UNKNOWN_CATEGORY = new();
 
-    public RequestService(UserManager<User> userManager, AppDbContext dbContext, ILogger<RequestService> logger, AppUserService appUserService)
+    public RequestService(AppDbContext dbContext, 
+                ILogger<RequestService> logger, 
+                AppUserService appUserService, 
+                ILookupService<RequestCategory> requestCategoryService)
     {
-        _userManager = userManager;
         _dbContext = dbContext;
         _logger = logger;
         _appUserService = appUserService;
+        _requestCategoryService = requestCategoryService;
     }
 
     public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user)
@@ -32,17 +34,19 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
         return await _dbContext.UserRequests
                 .Where(u => u.CreatedById == currentUser.Id)
                 .Include(u => u.Type)
+                .Include(u => u.Approvals)
                 .ToListAsync();
     }
 
-    public async Task<List<UserRequest>> GetRecordsForUserAsync(ClaimsPrincipal user)
+    public async Task<List<RequestApproval>> GetRecordsForUserAsync(ClaimsPrincipal user)
     {
+        
         var currentUser = await _appUserService.AppUserAsync(user);
         if(!currentUser.Roles.Contains(AppRoles.Approver.ToString()))
         {
-            return new List<UserRequest>();
+            return new List<RequestApproval>();
         }
-
+        
 
         return await _dbContext.RequestApprovals
                     .Where(a => a.ApproverId == currentUser.Id)
@@ -50,7 +54,6 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
                         .ThenInclude(r => r.Type)
                     .Include(a => a.Request)
                         .ThenInclude(r => r.CreatedBy)
-                    .Select(a => a.Request)
                     .ToListAsync();
         
         //LINQ Query syntax
@@ -81,7 +84,7 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
 
             newRequest.CreatedById = createdBy.Id;
 
-            var requestType = GetRequestCategory(newRequest.TypeId);
+            var requestType = _requestCategoryService.GetRecord(newRequest.TypeId);
             if(requestType == UNKNOWN_CATEGORY)
             {
                 //TODO: add logging             
@@ -96,7 +99,7 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
                     new RequestApproval{ApproverId = id, Status = ApprovalStatus.Pending}
                 ).ToList();
             }
-            
+
             //set status depending on approver
             newRequest.Status = newRequest.Approvals == null ? 
                                     RequestStatus.Approved : RequestStatus.Pending;
@@ -124,14 +127,9 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
         return new OpResult(Success: true);
     }
 
-    public List<RequestCategory> RequestCategories()
+    public Task<OpResult> UpdateRecordAsync(RequestApproval record)
     {
-        return _dbContext.RequestCategories.ToList();
-    }
-
-    public RequestCategory GetRequestCategory(int id)
-    {
-        return _dbContext.RequestCategories.Find(id) ?? UNKNOWN_CATEGORY;
+        throw new NotImplementedException();
     }
 
     public async Task<bool> DeleteRecordAsync(int recordId)

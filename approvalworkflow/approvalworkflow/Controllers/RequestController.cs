@@ -13,9 +13,9 @@ namespace approvalworkflow.Controllers;
 [Route("Requests")]
 public class RequestController : Controller
 {
-    private readonly IRepositoryService<UserRequest, RequestCategory> _requestService;
+    private readonly IRepositoryService<UserRequest, RequestApproval> _requestService;
 
-    public RequestController(IRepositoryService<UserRequest, RequestCategory> requestService)
+    public RequestController(IRepositoryService<UserRequest, RequestApproval> requestService)
     {
         _requestService = requestService;
     }

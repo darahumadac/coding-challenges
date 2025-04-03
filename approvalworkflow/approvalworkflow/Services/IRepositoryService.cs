@@ -5,20 +5,23 @@ using approvalworkflow.Models;
 
 namespace approvalworkflow.Services;
 
-public interface IRepositoryService<T, TRequestCategory>
-                where T : class
-                where TRequestCategory : class
+public interface IRepositoryService<TBy, TFor> 
+                        where TBy : class
+                        where TFor : class
 {
-    Task<List<T>> GetRecordsByUserAsync(ClaimsPrincipal user);
-    Task<List<T>> GetRecordsForUserAsync(ClaimsPrincipal user);
-    Task<OpResult> CreateRecordAsync(T newRecord);
-
-    Task<OpResult> UpdateRecordAsync(T record);
-
-    List<TRequestCategory> RequestCategories();
-    TRequestCategory GetRequestCategory(int categoryId);
-
+    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user);
+    Task<List<TFor>> GetRecordsForUserAsync(ClaimsPrincipal user);
+    Task<OpResult> CreateRecordAsync(TBy newRecord);
+    Task<OpResult> UpdateRecordAsync(TBy record);
+    Task<OpResult> UpdateRecordAsync(TFor record);
+    // Task<T> GetRecordAsync(int recordId);
     Task<bool> DeleteRecordAsync(int recordId);
 }
-
 public record OpResult(bool Success, string? errorCode = null);
+
+public interface ILookupService<T> where T : class
+{
+    List<T> GetRecords();
+    T GetRecord(int recordId);
+}
+

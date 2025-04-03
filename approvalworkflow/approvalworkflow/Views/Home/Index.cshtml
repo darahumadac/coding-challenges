@@ -1,7 +1,8 @@
-﻿@using Microsoft.AspNetCore.Identity;
+﻿@using Microsoft.AspNetCore.Identity
 @using approvalworkflow.Database
-@inject SignInManager<User> SignInManager;
-@model List<UserRequest>;
+@using approvalworkflow.Enums
+@inject SignInManager<User> SignInManager
+@model List<UserRequest>
 
 @{
     
@@ -47,8 +48,18 @@
                     <td>@request.UpdatedDate.AddHours(8)</td>
                     <td>
                         <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
-                        <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
+                        @if(request.Status == RequestStatus.Draft)
+                        {
+                            <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
+                            @* <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a> *@
+                        }
                         <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a>
+                        @* @if(request.Status == RequestStatus.Pending)
+                        {
+                            <a id="@request.Id" class="delete-btn btn btn-outline-danger btn-sm">Cancel</a>
+                            
+                        } *@
+                        
                     </td>
                 </tr>
             }

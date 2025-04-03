@@ -33,7 +33,7 @@ public class UserRequest
 
     [NotMapped]
     public ClaimsPrincipal User { get; set; } = null!;
-
+    
 }
 
 public class UserRequestViewModel
