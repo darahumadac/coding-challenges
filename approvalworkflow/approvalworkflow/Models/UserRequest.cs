@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Claims;
 using approvalworkflow.Enums;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace approvalworkflow.Models;
 public class UserRequest
@@ -38,7 +36,6 @@ public class UserRequest
 
 }
 
-// public record UserRequestViewModel(string Title, string Description, RequestType Type);
 public class UserRequestViewModel
 {
     public int Id { get; set; }
@@ -47,7 +44,4 @@ public class UserRequestViewModel
     [Required]
     public string Description { get; set; } = string.Empty;
     public int RequestCategoryId { get; set; }
-
-    [ValidateNever]
-    public IEnumerable<SelectListItem> RequestCategories { get; set; } = null!;
 }
