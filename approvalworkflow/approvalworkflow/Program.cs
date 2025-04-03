@@ -43,6 +43,7 @@ builder.Services.AddTransient<IEmailSender, MockEmailSender>();
 
 builder.Services.AddScoped<IRepositoryService<UserRequest, RequestCategory>, RequestService>();
 builder.Services.AddScoped<AppUserService>();
+builder.Services.AddScoped<UIService>();
 
 
 if (builder.Environment.IsDevelopment())
