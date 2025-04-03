@@ -9,6 +9,7 @@ public class RequestApproval
 
     public UserRequest Request { get; set; } = null!;
 
+    public int? ApproverId { get; set; }
     public AppUser? Approver { get; set; } = null!;
 
     public ApprovalStatus Status { get; set; }

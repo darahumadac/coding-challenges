@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using approvalworkflow.Database;
 
@@ -11,9 +12,11 @@ using approvalworkflow.Database;
 namespace approvalworkflow.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250402143632_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,7 +116,6 @@ namespace approvalworkflow.Migrations.AppDb
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -131,7 +133,6 @@ namespace approvalworkflow.Migrations.AppDb
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -172,13 +173,13 @@ namespace approvalworkflow.Migrations.AppDb
             modelBuilder.Entity("approvalworkflow.Models.UserRequest", b =>
                 {
                     b.HasOne("approvalworkflow.Models.AppUser", "CreatedBy")
-                        .WithMany("UserRequests")
+                        .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("approvalworkflow.Models.RequestCategory", "Type")
-                        .WithMany("UserRequests")
+                        .WithMany()
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -186,16 +187,6 @@ namespace approvalworkflow.Migrations.AppDb
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Type");
-                });
-
-            modelBuilder.Entity("approvalworkflow.Models.AppUser", b =>
-                {
-                    b.Navigation("UserRequests");
-                });
-
-            modelBuilder.Entity("approvalworkflow.Models.RequestCategory", b =>
-                {
-                    b.Navigation("UserRequests");
                 });
 
             modelBuilder.Entity("approvalworkflow.Models.UserRequest", b =>
