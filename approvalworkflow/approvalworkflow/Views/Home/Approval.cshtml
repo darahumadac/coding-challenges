@@ -16,6 +16,7 @@
             <th scope="col">Request Id</th>
             <th scope="col">Title</th>
             <th scope="col">Type</th>
+            <th scope="col">Submitted By</th>
             <th scope="col">Status</th>
             <th scope="col">Date Created</th>
             <th scope="col">Date Updated</th>
@@ -36,9 +37,10 @@
                     <td>@request.Id</td>
                     <td>@request.Title</td>
                     <td>@request.Type</td>
+                    <td>@request.CreatedBy.FullName</td>
                     <td>@request.Status</td>
-                    <td>@request.CreatedDate</td>
-                    <td>@request.UpdatedDate</td>
+                    <td>@request.CreatedDate.AddHours(8)</td>
+                    <td>@request.UpdatedDate.AddHours(8)</td>
                     <td>
                         <a asp-controller="Request" asp-action="Approve" asp-route-id="@request.Id" class="btn btn-outline-success btn-sm">Approve</a>
                         <a asp-controller="Request" asp-action="Reject" asp-route-id="@request.Id" class="btn btn-outline-danger btn-sm">Reject</a>

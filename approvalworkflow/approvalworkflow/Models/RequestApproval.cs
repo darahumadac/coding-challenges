@@ -7,6 +7,7 @@ public class RequestApproval
 {
     public int Id { get; set; }
 
+    public int RequestId { get; set; }
     public UserRequest Request { get; set; } = null!;
 
     public int? ApproverId { get; set; }

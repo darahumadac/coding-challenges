@@ -26,4 +26,8 @@ public class AppUser
 
     public List<UserRequest> UserRequests { get; set; } = null!;
 
+    
+    [NotMapped]
+    public string FullName => $"{FirstName} {LastName}";
+
 }

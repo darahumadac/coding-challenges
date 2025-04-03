@@ -43,8 +43,8 @@
                     <td>@request.Title</td>
                     <td>@request.Type</td>
                     <td>@request.Status</td>
-                    <td>@request.CreatedDate</td>
-                    <td>@request.UpdatedDate</td>
+                    <td>@request.CreatedDate.AddHours(8)</td>
+                    <td>@request.UpdatedDate.AddHours(8)</td>
                     <td>
                         <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
                         <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>

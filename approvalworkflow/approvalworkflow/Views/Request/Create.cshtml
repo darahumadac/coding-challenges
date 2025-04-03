@@ -1,1 +1,120 @@
-@model UserRequest
+@using approvalworkflow.Enums;
+@using Humanizer;
+@model UserRequestViewModel;
+@{
+    ViewData["Title"] = "Create Request";
+    var title = Model != null ? Model.Title : "hwllothere";
+}
+<h2 class="text-center">Create New Request</h2>
+<div class="d-flex justify-content-md-center">
+    <div class="d-flex flex-column">
+        <div id="notification" 
+            class="d-none row alert alert-success alert-dismissible fade show" 
+            role="alert">
+            <ul id="save-errors" class="d-none"></ul>
+            <span id="save-message"></span>
+            <button id="dismiss-notif" type="button" class="btn-close" aria-label="Close"></button>
+        </div>
+        <form id="create-request-form" method="POST" asp-controller="Request" asp-action="Create" class="row gy-3" >
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div>
+                <label asp-for="Title">Title</label>
+                <input asp-for="Title" type="text" aria-required="true" class="form-control" placeholder="Title" value="@title" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Description">Description</label>
+                <textarea asp-for="Description" class="form-control" aria-required="true" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div>
+    
+                <label asp-for="RequestCategoryId">Request Type</label>
+                <select asp-for="RequestCategoryId" class="form-select" asp-items="Model?.RequestCategories"></select>
+                @* <select asp-for="RequestCategory" asp-items="Html.GetEnumSelectList<RequestType>()" class="form-select"></select> *@
+                @* @Html.DropDownListFor(m => m.Type, Enum.GetValues<RequestType>()
+                                                    .Select(rt => new SelectListItem(rt.Humanize().Titleize(), ((int)rt).ToString())), 
+                                                    new {@class = "form-select"}) *@
+                
+            </div>
+            <div class="gap-2 d-md-flex justify-content-between">
+                <button asp-controller="Home" asp-action="Index" class="btn btn-outline-danger">Discard</button>
+                <div class="gap-2 d-md-flex justify-content-end">
+                    <button type="button" class="save-draft btn btn-secondary">
+                        <span id="save-draft-msg">Save as draft</span>
+                        <span id="spinner" class="spinner-border spinner-border-sm text-light d-none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+       jQuery(function(){
+            const notification = $('#notification');
+            const saveErrors = $('#save-errors');
+
+            const resetNotification = () => {
+                saveErrors.addClass('d-none');
+                saveErrors.html('');
+                notification.addClass('d-none');
+                notification.addClass('alert-success');
+            };
+
+            $('#dismiss-notif').on('click', function(){
+               resetNotification();
+            });
+
+            $('.save-draft').on('click',function(e){
+                resetNotification();
+                const form = $('#create-request-form');
+                if(!form.valid()){
+                    return;
+                }
+
+                const fields = $('.btn, input, select, textarea');
+                const saveDraftBtn = $(this);
+                const saveDraftMsg = $("#save-draft-msg");
+                const spinner = $('#spinner');
+
+                const serializedFormData = form.serialize();
+                console.log(serializedFormData);
+
+                fields.prop('disabled', true);
+                saveDraftMsg.text('Saving...');
+                spinner.toggleClass('d-none');
+
+                const saveUrl = `@Url.Action("Save", "Request")`;
+                
+                $.ajax(saveUrl, {
+                    method: "POST",
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: serializedFormData,
+                    success: function(){
+                        $('#save-message').text('Request was successfully saved as draft');
+                    },
+                    error: function(response){
+                        $.each(response.responseJSON, function(_,error){
+                            saveErrors.append(`<li>${error}</li>`);
+                        })
+                        saveErrors.removeClass('d-none');
+                        notification.removeClass('alert-success');
+                        notification.addClass('alert-danger');
+                    }
+                }).always(function(){
+                    notification.removeClass('d-none');
+                    fields.prop('disabled', false);
+                    spinner.toggleClass('d-none');
+                    saveDraftMsg.text('Save as draft');
+                });
+            });
+        });
+    </script>
+}
+    

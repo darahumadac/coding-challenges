@@ -1,12 +1,8 @@
 using approvalworkflow.Database;
 using approvalworkflow.Models;
 using approvalworkflow.Services;
-using Google.Apis.Auth.AspNetCore3;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -45,7 +41,8 @@ builder.Services.AddAuthentication()
 //configure email sender
 builder.Services.AddTransient<IEmailSender, MockEmailSender>();
 
-builder.Services.AddScoped<IRepositoryService<UserRequest>, RequestService>();
+builder.Services.AddScoped<IRepositoryService<UserRequest, RequestCategory>, RequestService>();
+builder.Services.AddScoped<AppUserService>();
 
 
 if (builder.Environment.IsDevelopment())

@@ -1,6 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Claims;
 using approvalworkflow.Enums;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -31,6 +32,9 @@ public class UserRequest
     public DateTime CreatedDate { get; set; }
     public DateTime UpdatedDate { get; set; }
     public List<RequestApproval> Approvals { get; set; } = null!;
+
+    [NotMapped]
+    public ClaimsPrincipal User { get; set; } = null!;
 
 }
 

@@ -1,6 +1,11 @@
+using System.Threading.Tasks;
 using approvalworkflow.Models;
+using approvalworkflow.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace approvalworkflow.Controllers;
 
@@ -8,17 +13,74 @@ namespace approvalworkflow.Controllers;
 [Route("Requests")]
 public class RequestController : Controller
 {
-    
+    private readonly IRepositoryService<UserRequest, RequestCategory> _requestService;
+
+    public RequestController(IRepositoryService<UserRequest, RequestCategory> requestService)
+    {
+        _requestService = requestService;
+    }
+
     [HttpGet("Create")]
     public IActionResult Create()
     {
-        return View();
+        var viewModel = new UserRequestViewModel
+        {
+            RequestCategories = _requestService.RequestCategories().Select(r => new SelectListItem { Text = r.ToString(), Value = r.Id.ToString() })
+        };
+        return View(viewModel);
     }
 
     [HttpPost("Create")]
-    public IActionResult Create(UserRequest request)
+    public async Task<IActionResult> Create(UserRequestViewModel request)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            ModelState.AddModelError(string.Empty, "Something was wrong with the request");
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return View(request);
+        }
+        
+        var userRequest = new UserRequest
+        {
+            Title = request.Title,
+            Description = request.Description,
+            TypeId =  request.RequestCategoryId,
+            User = User
+            // CreatedBy = currentUser //can only do this if the appUser is tracked. This will not work if this is AsNoTracking
+        };
+        var created = await _requestService.CreateRecordAsync(userRequest);
+        if (!created)
+        {
+            ModelState.AddModelError(string.Empty, "Unexpected error while saving request");
+            HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            return View(request);
+        }
+        return RedirectToAction("Index", "Home");
+    }
+
+    [HttpPost("Save")]
+    public async Task<IActionResult> Save(UserRequestViewModel request)
+    {
+        if (!ModelState.IsValid)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return BadRequest(ModelState);
+        }
+
+        var userRequest = new UserRequest
+        {
+            Id = request.Id,
+            Title = request.Title,
+            Description = request.Description,
+            TypeId = request.RequestCategoryId
+        };
+        if (await _requestService.UpdateRecordAsync(userRequest))
+        {
+            return Ok();
+        }
+
+        return new StatusCodeResult(500);
+
     }
 
     [HttpGet("Edit/{requestId}")]

@@ -11,11 +11,13 @@ public class AdminController : Controller
     }
 
     [Route("Users")]
-    public IActionResult Users(){
+    public IActionResult Users()
+    {
         return View();
     }
     [Route("Requests")]
-    public IActionResult Requests(){
+    public IActionResult Requests()
+    {
         return View();
     }
 

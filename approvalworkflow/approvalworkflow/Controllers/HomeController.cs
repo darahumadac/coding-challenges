@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using approvalworkflow.Models;
 using Microsoft.AspNetCore.Authorization;
 using approvalworkflow.Services;
-using System.Threading.Tasks;
 
 namespace approvalworkflow.Controllers;
 
@@ -11,12 +10,15 @@ namespace approvalworkflow.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly IRepositoryService<UserRequest> _requestService;
+    private readonly IRepositoryService<UserRequest, RequestCategory> _requestService;
+    private readonly AppUserService _appUserService;
 
-    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest> requestService)
+    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest, RequestCategory> requestService, AppUserService appUserService)
     {
         _logger = logger;
         _requestService = requestService;
+        _appUserService = appUserService;
+
     }
 
     public async Task<IActionResult> Index()
@@ -30,12 +32,6 @@ public class HomeController : Controller
     {
         var forApproval = await _requestService.GetRecordsForUserAsync(User);
         return View(forApproval);
-    }
-
-    [HttpGet("ConfirmDelete/{requestId}")]
-    public IActionResult _ConfirmDelete(int requestId)
-    {
-        return PartialView("_ConfirmDeletePartial", requestId);
     }
 
     [AllowAnonymous]
