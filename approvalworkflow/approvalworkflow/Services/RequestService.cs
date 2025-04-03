@@ -71,7 +71,6 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
             var now = DateTime.UtcNow;
             newRequest.CreatedDate = now;
             newRequest.UpdatedDate = now;
-            newRequest.Status = RequestStatus.Pending;
 
             var createdBy = await _appUserService.AppUserAsync(newRequest.User);
             if(createdBy == _appUserService.UNKNOWN_USER)
@@ -98,6 +97,10 @@ public class RequestService : IRepositoryService<UserRequest, RequestCategory>
                 ).ToList();
             }
             
+            //set status depending on approver
+            newRequest.Status = newRequest.Approvals == null ? 
+                                    RequestStatus.Approved : RequestStatus.Pending;
+
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
