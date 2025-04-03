@@ -1,9 +1,10 @@
 @using approvalworkflow.Enums;
 @using Humanizer;
+@using approvalworkflow.Services
 @model UserRequestViewModel;
+@inject UIService UIService;
 @{
     ViewData["Title"] = "Create Request";
-    var title = Model != null ? Model.Title : "hwllothere";
 }
 <h2 class="text-center">Create New Request</h2>
 <div class="d-flex justify-content-md-center">
@@ -19,7 +20,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div>
                 <label asp-for="Title">Title</label>
-                <input asp-for="Title" type="text" aria-required="true" class="form-control" placeholder="Title" value="@title" />
+                <input asp-for="Title" type="text" aria-required="true" class="form-control" placeholder="Title" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div>
@@ -30,7 +31,7 @@
             <div>
     
                 <label asp-for="RequestCategoryId">Request Type</label>
-                <select asp-for="RequestCategoryId" class="form-select" asp-items="Model?.RequestCategories"></select>
+                <select asp-for="RequestCategoryId" class="form-select" asp-items="UIService.RequestCategories"></select>
                 @* <select asp-for="RequestCategory" asp-items="Html.GetEnumSelectList<RequestType>()" class="form-select"></select> *@
                 @* @Html.DropDownListFor(m => m.Type, Enum.GetValues<RequestType>()
                                                     .Select(rt => new SelectListItem(rt.Humanize().Titleize(), ((int)rt).ToString())), 
