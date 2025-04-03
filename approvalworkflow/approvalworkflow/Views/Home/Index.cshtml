@@ -48,7 +48,7 @@
                     <td>
                         <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
                         <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
-                        <a id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a>
+                        <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a>
                     </td>
                 </tr>
             }
@@ -63,7 +63,7 @@
 <script>
      $(document).ready(function(){
         $('.delete-btn').click(function(e){
-            $('#modal-info').html(`<p>${$(this).data('title')}</p>`);
+            $('#modal-info').html(`<strong><p>Request &num;${$(this).data('id')} - ${$(this).data('title')}</p></strong>`);
             let deleteUrl = `@Url.Action("Delete", "Requests")/${e.target.id}`;
             $('#delete-form').attr('action', deleteUrl);
             $('#confirmDeleteModal').modal('toggle');

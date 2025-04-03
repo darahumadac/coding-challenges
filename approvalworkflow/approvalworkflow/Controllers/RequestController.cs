@@ -23,11 +23,7 @@ public class RequestController : Controller
     [HttpGet("Create")]
     public IActionResult Create()
     {
-        var viewModel = new UserRequestViewModel
-        {
-            RequestCategories = _requestService.RequestCategories().Select(r => new SelectListItem { Text = r.ToString(), Value = r.Id.ToString() })
-        };
-        return View(viewModel);
+        return View();
     }
 
     [HttpPost("Create")]
@@ -48,10 +44,10 @@ public class RequestController : Controller
             User = User
             // CreatedBy = currentUser //can only do this if the appUser is tracked. This will not work if this is AsNoTracking
         };
-        var created = await _requestService.CreateRecordAsync(userRequest);
-        if (!created)
+        var createdResult = await _requestService.CreateRecordAsync(userRequest);
+        if (!createdResult.Success)
         {
-            ModelState.AddModelError(string.Empty, "Unexpected error while saving request");
+            ModelState.AddModelError(string.Empty, createdResult.errorCode!);
             HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return View(request);
         }
@@ -72,15 +68,17 @@ public class RequestController : Controller
             Id = request.Id,
             Title = request.Title,
             Description = request.Description,
-            TypeId = request.RequestCategoryId
+            TypeId = request.RequestCategoryId,
+            User = User
         };
-        if (await _requestService.UpdateRecordAsync(userRequest))
+
+        var updateResult = await _requestService.UpdateRecordAsync(userRequest);
+        if (!updateResult.Success)
         {
-            return Ok();
+            return StatusCode(500, new {erorCode = updateResult.errorCode!});
         }
 
-        return new StatusCodeResult(500);
-
+        return Ok();
     }
 
     [HttpGet("Edit/{requestId}")]
@@ -90,9 +88,16 @@ public class RequestController : Controller
     }
 
     [HttpPost("Delete/{requestId}")]
-    public IActionResult Delete(int requestId)
+    public async Task<IActionResult> Delete(int requestId)
     {
-        return RedirectToAction("Index", "Home");
+        var deleted = await _requestService.DeleteRecordAsync(requestId);
+        if(deleted)
+        {
+            //TODO: change to ajax
+            return RedirectToAction("Index", "Home");
+        }
+
+        return StatusCode(500);
     }
 
     //named the route to try using the asp-route attribute in the view

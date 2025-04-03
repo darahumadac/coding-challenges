@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using approvalworkflow.Database;
+using approvalworkflow.Enums;
 using approvalworkflow.Models;
 
 namespace approvalworkflow.Services;
@@ -10,11 +11,14 @@ public interface IRepositoryService<T, TRequestCategory>
 {
     Task<List<T>> GetRecordsByUserAsync(ClaimsPrincipal user);
     Task<List<T>> GetRecordsForUserAsync(ClaimsPrincipal user);
-    Task<bool> CreateRecordAsync(T newRecord);
+    Task<OpResult> CreateRecordAsync(T newRecord);
 
-    Task<bool> UpdateRecordAsync(T record);
+    Task<OpResult> UpdateRecordAsync(T record);
 
     List<TRequestCategory> RequestCategories();
-    TRequestCategory GetRequestCategory(int id);
+    TRequestCategory GetRequestCategory(int categoryId);
 
+    Task<bool> DeleteRecordAsync(int recordId);
 }
+
+public record OpResult(bool Success, string? errorCode = null);
