@@ -23,7 +23,7 @@ public class RequestController : Controller
     [HttpGet("Create")]
     public IActionResult Create()
     {
-        return View();
+        return View(new UserRequestViewModel());
     }
 
     [HttpPost("Create")]
@@ -31,13 +31,13 @@ public class RequestController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ModelState.AddModelError(string.Empty, "Something was wrong with the request");
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return View(request);
         }
         
         var userRequest = new UserRequest
         {
+            Id = request.Id,
             Title = request.Title,
             Description = request.Description,
             TypeId =  request.RequestCategoryId,
@@ -47,7 +47,7 @@ public class RequestController : Controller
         var createdResult = await _requestService.CreateRecordAsync(userRequest);
         if (!createdResult.Success)
         {
-            ModelState.AddModelError(string.Empty, createdResult.errorCode!);
+            ModelState.AddModelError(string.Empty, createdResult.ErrorEventId.ToString()!);
             HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return View(request);
         }
@@ -75,10 +75,11 @@ public class RequestController : Controller
         var updateResult = await _requestService.UpdateRecordAsync(userRequest);
         if (!updateResult.Success)
         {
-            return StatusCode(500, new {erorCode = updateResult.errorCode!});
+            ModelState.AddModelError(string.Empty, updateResult.ErrorEventId.ToString()!);
+            return StatusCode(500);
         }
 
-        return Ok();
+        return Ok(updateResult.Data);
     }
 
     [HttpGet("Edit/{requestId}")]

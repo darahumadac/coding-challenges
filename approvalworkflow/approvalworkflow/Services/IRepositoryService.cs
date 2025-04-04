@@ -17,7 +17,7 @@ public interface IRepositoryService<TBy, TFor>
     // Task<T> GetRecordAsync(int recordId);
     Task<bool> DeleteRecordAsync(int recordId);
 }
-public record OpResult(bool Success, string? errorCode = null);
+public record OpResult(bool Success, EventId? ErrorEventId = null, object? Data = null);
 
 public interface ILookupService<T> where T : class
 {

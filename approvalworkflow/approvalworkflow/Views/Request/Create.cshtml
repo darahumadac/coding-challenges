@@ -38,8 +38,9 @@
                                                     new {@class = "form-select"}) *@
                 
             </div>
+            <input type="hidden" asp-for="Id" />
             <div class="gap-2 d-md-flex justify-content-between">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-danger">Discard</a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark">Cancel</a>
                 <div class="gap-2 d-md-flex justify-content-end">
                     <button type="button" class="save-draft btn btn-secondary">
                         <span id="save-draft-msg">Save as draft</span>
@@ -47,7 +48,7 @@
                             <span class="visually-hidden">Loading...</span>
                         </span>
                     </button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary">Submit for Approval</button>
                 </div>
             </div>
         </form>
@@ -60,8 +61,10 @@
        jQuery(function(){
             const notification = $('#notification');
             const saveErrors = $('#save-errors');
+            const saveMessage = $('#save-message');
 
             const resetNotification = () => {
+                saveMessage.text('');
                 saveErrors.addClass('d-none');
                 saveErrors.html('');
                 notification.addClass('d-none');
@@ -97,16 +100,22 @@
                     method: "POST",
                     contentType: 'application/x-www-form-urlencoded',
                     data: serializedFormData,
-                    success: function(){
-                        $('#save-message').text('Request was successfully saved as draft');
+                    success: function(response){
+                        saveMessage.text('Request was successfully saved as draft');
+                        $('#Id').val(response.requestId);
                     },
                     error: function(response){
+                        console.log(response);
                         $.each(response.responseJSON, function(_,error){
                             saveErrors.append(`<li>${error}</li>`);
                         })
-                        saveErrors.removeClass('d-none');
-                        notification.removeClass('alert-success');
-                        notification.addClass('alert-danger');
+
+                        if(saveErrors.length > 0)
+                        {
+                            saveErrors.removeClass('d-none');
+                            notification.removeClass('alert-success');
+                            notification.addClass('alert-danger');
+                        }
                     }
                 }).always(function(){
                     notification.removeClass('d-none');

@@ -49,7 +49,7 @@ public class AppUserService
             while (approver != null && (depth == null || approverIds.Count < depth) )
             {
                 approverIds.Add(approver.Id);
-                appUser = await _appDbContext.AppUsers.Where(u => u.Id == approver.Id).Include(u => u.Supervisor).FirstOrDefaultAsync();
+                appUser = await _appDbContext.AppUsers.Where(u => u.Id == approver.Id).Include(u => u.Supervisor).FirstAsync();
                 approver = appUser.Supervisor;
             }
         }
