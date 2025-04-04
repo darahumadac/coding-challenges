@@ -13,10 +13,14 @@
     <h1 class="display-6 title">Request Dashboard</h1>
     <div class="menu-options">
         <div class="menu-option">
-            <i class="fa-solid fa-circle-plus text-success"></i>
-            <a  asp-controller="Request" asp-action="Create" class="text-primary">Submit a Request</a>
+            <a class="btn btn-primary" asp-controller="Request" asp-action="Create" class="text-primary">
+                <i class="fa-solid fa-plus"></i>
+                <span>Submit request</span>
+            </a>
         </div>
+        <partial name="_FilterPartial" />
     </div>
+    
     @* List of Submitted Requests *@
     <table class="table table-hover">
         <thead>
@@ -65,9 +69,10 @@
             }
         </tbody>
     </table>
+    <partial name="_PaginationPartial" />
 </div>
 <div id="modal-container">
-    @await Html.PartialAsync("_ConfirmDeletePartial");
+    @await Html.PartialAsync("_ConfirmDeletePartial")
 </div>
 
 @section Scripts{
