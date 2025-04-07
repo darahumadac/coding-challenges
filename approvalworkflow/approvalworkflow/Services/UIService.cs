@@ -1,3 +1,4 @@
+using approvalworkflow.Enums;
 using approvalworkflow.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -16,4 +17,7 @@ public class UIService
             .Select(r => new SelectListItem { Text = r.ToString(), Value = r.Id.ToString() });
 
     public IEnumerable<int> PaginatorPageSizes => [5, 10, 20, 0];
+
+    
+    public IEnumerable<string> Statuses(Type type) => Enum.GetNames(type);
 }

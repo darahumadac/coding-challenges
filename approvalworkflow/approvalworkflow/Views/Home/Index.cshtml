@@ -31,7 +31,7 @@
         const getUserRequests = function(){
             //send get request
             const dashboardUrl = `@Url.Action("Index", "Home")`;
-            //TODO: Show spinner
+            $('#loading').removeClass('d-none');
             $.ajax(dashboardUrl,{
                 method: "GET",
                 data: {
@@ -40,6 +40,9 @@
                 },
                 success: function(response){
                     $('#records').html(response);
+                },
+                complete: function(){
+                    $('#loading').addClass('d-none');
                 }
             });
         };
