@@ -21,20 +21,11 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index([FromQuery] UserRequestDashboardViewModel viewModel)
     {
-        var paginator = new Paginator<UserRequest>
-        {
-            Page = viewModel.Page,
-            PageSize = Request.Query.Count > 0 ? viewModel.PageSize : 5
-        };
+        viewModel.PageSize = Request.Query.Count > 0 ? viewModel.PageSize : 5;
 
-        var userRequests = await _requestService.GetRecordsByUserAsync(User, paginator);
+        var userRequests = await _requestService.GetRecordsByUserAsync(User, viewModel);
         viewModel.Requests = userRequests;
-        viewModel.TotalRecords = paginator.TotalRecords;
-        viewModel.Start = paginator.Start;
-        viewModel.End = paginator.End;
-        viewModel.Page = paginator.Page;
-        viewModel.PageSize = paginator.PageSize;
-
+        
         if(Request.Query.Count == 0)
         {
             return View(viewModel);    

@@ -6,7 +6,7 @@ public interface IRepositoryService<TBy, TFor>
                         where TBy : class
                         where TFor : class
 {
-    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginator<TBy>? paginator = null);
+    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<TBy>? paginator = null);
     Task<List<TFor>> GetRecordsForUserAsync(ClaimsPrincipal user);
     Task<OpResult> CreateRecordAsync(TBy newRecord);
     Task<OpResult> UpdateRecordAsync(TBy record);
@@ -21,7 +21,7 @@ public interface ILookupService<T> where T : class
     T GetRecord(int recordId);
 }
 
-public class Paginator<T> where T : class
+public class Paginated<T> where T : class
 {
     public int PageSize { get; set;}
     private int _page;
@@ -29,7 +29,7 @@ public class Paginator<T> where T : class
     {
         get
         {
-            return _page;
+            return Math.Max(1, _page);
         }
         set
         {

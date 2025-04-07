@@ -25,7 +25,7 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
         _requestCategoryService = requestCategoryService;
     }
 
-    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginator<UserRequest>? paginator = null)
+    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<UserRequest>? paginator = null)
     {
         var currentUser = await _appUserService.AppUserAsync(user);
         var requestsByUser = _dbContext.UserRequests

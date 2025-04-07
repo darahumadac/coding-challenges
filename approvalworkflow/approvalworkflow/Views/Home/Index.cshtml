@@ -48,6 +48,9 @@
             $('#records').on('click', function(e){
                 //confirm delete
                 const target = e.target;
+                if(!$(target).is('.delete-btn')){
+                    return;
+                }
                 const requestId = $(target).data('id');
                 $('#modal-info').html(`<strong><p>Request &num;${requestId} - ${$(target).data('title')}</p></strong>`);
                 $('#modal-info').removeData();
