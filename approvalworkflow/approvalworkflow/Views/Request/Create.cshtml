@@ -40,16 +40,16 @@
             </div>
             <input type="hidden" asp-for="Id" />
             <div class="gap-2 d-md-flex justify-content-between">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark">Cancel</a>
-                <div class="gap-2 d-md-flex justify-content-end">
+                <div class="gap-2 d-md-flex">
+                    <button type="submit" class="btn btn-primary">Submit for Approval</button>
                     <button type="button" class="save-draft btn btn-secondary">
                         <span id="save-draft-msg">Save as draft</span>
                         <span id="spinner" class="spinner-border spinner-border-sm text-light d-none" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </span>
                     </button>
-                    <button type="submit" class="btn btn-primary">Submit for Approval</button>
                 </div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark justify-content-end">Cancel</a>
             </div>
         </form>
     </div>
