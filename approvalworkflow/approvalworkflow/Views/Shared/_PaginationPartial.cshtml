@@ -1,6 +1,14 @@
+@model UserRequestDashboardViewModel
+@{
+    var message = "Showing all records";
+    if(Model.PageSize > 0 && Model.TotalRecords > Model.PageSize)
+    {
+        message = $"Showing {Model.Start} to {Model.End} of {Model.TotalRecords} ";
+    }
+}
 <div class="paginator">
     <div class="page-size">
-       <span>Showing 1 to 10 of 50 entries</span>
+       <span id="page-size-label">@message</span>
     </div>
     <nav aria-label="page navigation">            
         <ul class="pagination justify-content-end">
@@ -15,4 +23,4 @@
             <li class="page-item"><a class="page-link" href="#">Last</a></li>
         </ul>
     </nav>
-</div>
+</div> 

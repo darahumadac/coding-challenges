@@ -25,11 +25,16 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
         _requestCategoryService = requestCategoryService;
     }
 
-    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user)
+    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginator<UserRequest>? paginator = null)
     {
         var currentUser = await _appUserService.AppUserAsync(user);
-        return await _dbContext.UserRequests
-                .Where(u => u.CreatedById == currentUser.Id)
+        var requestsByUser = _dbContext.UserRequests
+                .Where(u => u.CreatedById == currentUser.Id);
+
+        if(paginator != null){
+            requestsByUser = paginator.GetRecords(requestsByUser);
+        }
+        return await requestsByUser
                 .Include(u => u.Type)
                 .Include(u => u.Approvals)
                 .ToListAsync();

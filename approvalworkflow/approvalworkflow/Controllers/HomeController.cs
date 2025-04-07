@@ -11,20 +11,33 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly IRepositoryService<UserRequest, RequestApproval> _requestService;
-    private readonly AppUserService _appUserService;
 
-    public HomeController(ILogger<HomeController> logger, IRepositoryService<UserRequest, RequestApproval> requestService, AppUserService appUserService)
+    public HomeController(ILogger<HomeController> logger, 
+            IRepositoryService<UserRequest, RequestApproval> requestService)
     {
         _logger = logger;
         _requestService = requestService;
-        _appUserService = appUserService;
-
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index([FromQuery] UserRequestDashboardViewModel viewModel)
     {
-        var requests = await _requestService.GetRecordsByUserAsync(User);
-        return View(requests);
+        if(Request.Query.Count == 0)
+        {
+            var userRequests = await _requestService.GetRecordsByUserAsync(User);
+            viewModel.Requests = userRequests;
+            return View(viewModel);
+        }
+
+        var paginator = new Paginator<UserRequest>{
+            Page = viewModel.Page, 
+            PageSize = viewModel.PageSize
+        };
+        var paginatedUserRequests = await _requestService.GetRecordsByUserAsync(User, paginator);
+        viewModel.Requests = paginatedUserRequests;
+        viewModel.TotalRecords = paginator.TotalRecords;
+        viewModel.Start = paginator.Start;
+        viewModel.End = paginator.End;
+        return PartialView("_TablePartial", viewModel);
     }
 
     [Authorize(Roles = "Approver")]

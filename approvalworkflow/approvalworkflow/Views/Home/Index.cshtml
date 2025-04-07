@@ -1,9 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using approvalworkflow.Database
-@using approvalworkflow.Enums
 @inject SignInManager<User> SignInManager
-@model List<UserRequest>
-
+@model UserRequestDashboardViewModel
 @{
     
     ViewData["Title"] = SignInManager.IsSignedIn(User) ? "Welcome": "Hello";
@@ -18,74 +16,62 @@
                 <span>Submit request</span>
             </a>
         </div>
-        <partial name="_FilterPartial" />
+        <partial name="_FilterPartial"/>
     </div>
-    
-    @* List of Submitted Requests *@
-    <table class="table table-hover">
-        <thead>
-            <th scope="col">Request Id</th>
-            <th scope="col">Title</th>
-            <th scope="col">Type</th>
-            <th scope="col">Status</th>
-            <th scope="col">Date Created</th>
-            <th scope="col">Date Updated</th>
-            <th scope="col"></th>
-        </thead>
-        <tbody>
-            @if(Model.Count() == 0)
-            {
-                <tr>
-                    <td colspan="7">
-                        No records
-                    </td>
-                </tr>
-            }
-            @foreach(var request in Model)
-            {
-                <tr>
-                    <td>@request.Id</td>
-                    <td>@request.Title</td>
-                    <td>@request.Type</td>
-                    <td>@request.Status</td>
-                    <td>@request.CreatedDate.AddHours(8)</td>
-                    <td>@request.UpdatedDate.AddHours(8)</td>
-                    <td>
-                        <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
-                        @if(request.Status == RequestStatus.Draft)
-                        {
-                            <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
-                            @* <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a> *@
-                        }
-                        <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a>
-                        @* @if(request.Status == RequestStatus.Pending)
-                        {
-                            <a id="@request.Id" class="delete-btn btn btn-outline-danger btn-sm">Cancel</a>
-                            
-                        } *@
-                        
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <partial name="_PaginationPartial" />
+    <div id="records">
+        <partial name="_TablePartial", model="Model" />
+    </div>
 </div>
 <div id="modal-container">
     @await Html.PartialAsync("_ConfirmDeletePartial")
 </div>
 
 @section Scripts{
-<script>
-     $(document).ready(function(){
-        $('.delete-btn').click(function(e){
-            $('#modal-info').html(`<strong><p>Request &num;${$(this).data('id')} - ${$(this).data('title')}</p></strong>`);
-            let deleteUrl = `@Url.Action("Delete", "Requests")/${e.target.id}`;
-            $('#delete-form').attr('action', deleteUrl);
-            $('#confirmDeleteModal').modal('toggle');
-        });
-    })
-</script>
+    <script>
+        const getUserRequests = function(){
+            //send get request
+            const dashboardUrl = `@Url.Action("Index", "Home")`;
+            //TODO: Show spinner
+            $.ajax(dashboardUrl,{
+                method: "GET",
+                data: {
+                    pageSize: () => $('#page-size-dropdown').val(),
+                    page: 1
+                },
+                success: function(response){
+                    $('#records').html(response);
+                }
+            });
+        };
+
+        jQuery(function(){
+            $('#records').on('click', function(e){
+                //confirm delete
+                const target = e.target;
+                const requestId = $(target).data('id');
+                $('#modal-info').html(`<strong><p>Request &num;${requestId} - ${$(target).data('title')}</p></strong>`);
+                $('#modal-info').removeData();
+                $('#modal-info').data('requestId', requestId);
+                $('#confirmDeleteModal').modal('toggle');
+            });
+
+            //delete confirmed
+            $('#delete-form').submit(function(e){
+                e.preventDefault();
+                const requestId = $('#modal-info').data('requestId');
+                let deleteUrl = `@Url.Action("Delete", "Requests")/${requestId}`;
+                $.ajax(deleteUrl, {
+                    method: "POST",
+                    success: function(){
+                        getUserRequests();
+                        $('#confirmDeleteModal').modal('toggle');
+                    }
+                });
+            });
+
+            $('#page-size-dropdown').change(getUserRequests);
+        })
+    </script>
 }
    
 
