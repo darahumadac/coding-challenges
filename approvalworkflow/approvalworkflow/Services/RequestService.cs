@@ -29,7 +29,10 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
     {
         var currentUser = await _appUserService.AppUserAsync(user);
         var requestsByUser = _dbContext.UserRequests
-                .Where(u => u.CreatedById == currentUser.Id);
+                .Where(u => u.CreatedById == currentUser.Id)
+                .OrderBy(u => u.Status)
+                .ThenByDescending(u => u.UpdatedDate)
+                .AsQueryable();
 
         if(paginator != null){
             requestsByUser = paginator.GetRecords(requestsByUser);
