@@ -58,6 +58,15 @@
                 $('#confirmDeleteModal').modal('toggle');
             });
 
+            $('#records').on('click', function(e){
+                const target = e.target;
+                const requestId = $(target).closest('tr').data('id');
+                if(!$(target).is('.request-info')){
+                    return;
+                }
+               window.location.href = `/Requests/View/${requestId}`;
+            });
+
             //delete confirmed
             $('#delete-form').submit(function(e){
                 e.preventDefault();
