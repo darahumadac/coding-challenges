@@ -1,12 +1,23 @@
+@using approvalworkflow.Services
+@inject UIService UIService
+@model int
 <nav class="navbar">
     <div class="paginator">
         <div class="page-size">
             <label>Show rows per page</label>
             <select id="page-size-dropdown">
-                <option value="0">All</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
+                @foreach(var pageSize in UIService.PaginatorPageSizes)
+                {
+                    var text = pageSize == 0 ? "All" : pageSize.ToString();
+                    if(pageSize == Model)
+                    {
+                        <option value="@pageSize" selected>@text</option>
+                    }
+                    else
+                    {
+                        <option value="@pageSize">@text</option>
+                    }
+                }
             </select>
         </div>    
     </div>

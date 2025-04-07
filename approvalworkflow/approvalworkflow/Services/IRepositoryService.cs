@@ -23,11 +23,21 @@ public interface ILookupService<T> where T : class
 
 public class Paginator<T> where T : class
 {
-    public int PageSize { get; set; }
-    public int Page { get; set; }
-    private int _pageCount;
-    public int PageCount => _pageCount;
-
+    public int PageSize { get; set;}
+    private int _page;
+    public int Page 
+    {
+        get
+        {
+            return _page;
+        }
+        set
+        {
+            _page = Math.Max(1, _page);
+        }
+    }
+    public int PageCount => PageSize > 0 ? (_totalRecords / PageSize) + 1 : 1;
+        
     private int _totalRecords;
     public int TotalRecords => _totalRecords;
 
@@ -39,12 +49,10 @@ public class Paginator<T> where T : class
         _totalRecords = values.Count();
         if(PageSize == 0)
         {
-            _pageCount = 1;
             return values;
         }
         else
         {
-            _pageCount = (_totalRecords / PageSize) + 1;
             return values.Skip((Page-1) * PageSize).Take(PageSize);
         }
     }

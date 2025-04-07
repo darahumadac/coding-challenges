@@ -14,4 +14,6 @@ public class UIService
 
     public IEnumerable<SelectListItem> RequestCategories => _categoryService.GetRecords()
             .Select(r => new SelectListItem { Text = r.ToString(), Value = r.Id.ToString() });
+
+    public IEnumerable<int> PaginatorPageSizes => [5, 10, 20, 0];
 }
