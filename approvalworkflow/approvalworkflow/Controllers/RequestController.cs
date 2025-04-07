@@ -94,8 +94,7 @@ public class RequestController : Controller
         var deleted = await _requestService.DeleteRecordAsync(requestId);
         if(deleted)
         {
-            //TODO: change to ajax
-            return RedirectToAction("Index", "Home");
+            return NoContent();
         }
 
         return StatusCode(500);
