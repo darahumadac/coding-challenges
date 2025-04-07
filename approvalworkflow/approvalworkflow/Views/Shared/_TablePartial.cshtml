@@ -25,25 +25,37 @@
             }
             @foreach(var request in records)
             {
-                <tr>
-                    <td>@request.Id</td>
-                    <td>@request.Title</td>
-                    <td>@request.Type</td>
-                    <td>@request.Status</td>
-                    <td>@request.CreatedDate.AddHours(8)</td>
-                    <td>@request.UpdatedDate.AddHours(8)</td>
-                    <td>
-                        <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary btn-sm">View</a>
-                        @if(request.Status == RequestStatus.Draft)
+                <tr data-id="@request.Id">
+                    <td class="request-info">@request.Id</td>
+                    <td class="request-info">@request.Title</td>
+                    <td class="request-info">@request.Type</td>
+                    <td class="request-info">@request.Status</td>
+                    <td class="request-info">@request.CreatedDate.AddHours(8)</td>
+                    <td class="request-info">@request.UpdatedDate.AddHours(8)</td>
+                    <td class="more-options">
+                        @if(request.Status == RequestStatus.Draft || request.Status == RequestStatus.Pending)
                         {
-                            <a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="btn btn-outline-warning btn-sm">Edit</a>
-                            @* <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a> *@
+                            <div class="dropdown">
+                                <a class="btn dropdown-toggle no-after" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </a>
+                                
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                    @if(request.Status == RequestStatus.Draft)
+                                    {
+                                        <li><a asp-controller="Request" asp-action="Edit" asp-route-requestId="@request.Id" class="dropdown-item">Edit</a></li>
+                                        <li><a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="dropdown-item delete-btn text-danger">Delete</a></li>
+                                        
+                                    }else if(request.Status == RequestStatus.Pending)
+                                    {
+                                        <li><a id="@request.Id" class="dropdown-item text-danger">Cancel Request</a></li>
+                                    }
+                                </ul>
+                            </div>
                         }
-                        <a id="@request.Id" data-id="@request.Id" data-title="@request.Title" class="delete-btn btn btn-outline-danger btn-sm">Delete</a>
-                        @* @if(request.Status == RequestStatus.Pending)
+                        @* else
                         {
-                            <a id="@request.Id" class="delete-btn btn btn-outline-danger btn-sm">Cancel</a>
-                            
+                            <a asp-route="ViewRequest" asp-route-requestId="@request.Id" class="btn btn-outline-primary">View</a>
                         } *@
                         
                     </td>

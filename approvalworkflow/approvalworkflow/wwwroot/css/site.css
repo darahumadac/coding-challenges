@@ -102,3 +102,7 @@ body {
   border-color: #dee2e6;
 }
 
+.more-options .no-after::after{
+  content: none;
+}
+
