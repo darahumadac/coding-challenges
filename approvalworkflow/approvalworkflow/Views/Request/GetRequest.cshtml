@@ -1,2 +1,80 @@
-@model int
-<h1>View Request @Model</h1>
+@using approvalworkflow.Enums
+@model UserRequest
+<h1 class="display-5 title text-center">Request Details</h1>
+
+<div class="container mt-3">
+  <div class="card shadow rounded-4">
+    <div class="card-header bg-secondary bg-gradient text-light d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Request #@Model.Id - @Model.Title</h5>
+      <span class="badge bg-warning text-dark">@Model.Status</span>
+    </div>
+
+    <div class="card-body d-flex justify-content-around">
+        <div>
+            <h4 class="mb-4">Request Information</h4>
+            <div class="mb-3">
+                <h6 class="fw-bold">Description:</h6>
+                <p>@Model.Description</p>
+            </div>
+            <div class="mb-3">
+                <h6 class="fw-bold">Request Date:</h6>
+                <p>@Model.CreatedDate.ToLocalTime().ToString("MMM dd yyyy, hh:mm:ss tt")</p>
+            </div>
+        </div>
+        @if(Model.Status != RequestStatus.Draft)
+        {
+            <div>
+                <h4 class="mb-4">Approvers</h4>
+                @if(Model.Approvals.Count == 0)
+                {
+                    <p>No Approval Required</p>
+                }
+                <ul>
+                    @foreach(var approval in Model.Approvals)
+                    {
+                        <li>@approval.Approver?.FullName</li>
+                    }
+                </ul>
+                
+            </div>
+        }
+        
+        <div>
+        <h4 class="mb-4">Request Status Timeline</h4>
+        @{
+            var requestStatus = Model.Status;
+            var finalStatus = Enum.GetValues<RequestStatus>()
+                    .Where(s => s >= RequestStatus.Cancelled && s != requestStatus)
+                    .ToHashSet();
+            var statusList = Enum.GetValues<RequestStatus>()
+                    .Where(s => s <= requestStatus && !finalStatus.Contains(s));
+        }
+        
+        <div class="timeline">
+            @foreach(var status in statusList)
+            {
+                var progress = status < requestStatus ? "completed" 
+                        : status == requestStatus ? "in-progress" : "";
+               
+                <div class="timeline-step @progress">
+                    <div class="dot"></div>
+                    <div class="label">Request @status.ToString()</div>
+                    <div class="timestamp">Date </div>
+                    @if(status == RequestStatus.Pending)
+                    {
+                        var pendingApprovers = Model.Approvals
+                            .Where(a => a.Status == ApprovalStatus.Pending)
+                            .Select(a => a.Approver?.FullName);
+                        @foreach(var approver in pendingApprovers)
+                        {
+                            <div class="approver">@approver</div>
+                        }
+                    }
+                </div>
+               
+            }
+            
+        </div>
+    </div>
+</div>
+

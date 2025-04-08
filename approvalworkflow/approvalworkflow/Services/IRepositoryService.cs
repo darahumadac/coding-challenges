@@ -11,7 +11,8 @@ public interface IRepositoryService<TBy, TFor>
     Task<OpResult> CreateRecordAsync(TBy newRecord);
     Task<OpResult> UpdateRecordAsync(TBy record);
     Task<OpResult> UpdateRecordAsync(TFor record);
-    Task<bool> DeleteRecordAsync(int recordId);
+    Task<bool> DeleteRecordAsync(ClaimsPrincipal user, int recordId);
+    Task<OpResult> GetRecordByUserAsync(ClaimsPrincipal user, int recordId);
 }
 public record OpResult(bool Success, EventId? ErrorEventId = null, object? Data = null);
 
@@ -19,6 +20,8 @@ public interface ILookupService<T> where T : class
 {
     List<T> GetRecords();
     T GetRecord(int recordId);
+
+    public T UKNOWN { get;}
 }
 
 public class Paginated<T> where T : class

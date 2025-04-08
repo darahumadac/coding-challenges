@@ -1,13 +1,15 @@
 using approvalworkflow.Database;
 using approvalworkflow.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace approvalworkflow.Services;
 
 public class RequestCategoryService : ILookupService<RequestCategory>
 {
     private readonly AppDbContext _dbContext;
-    private RequestCategory UNKNOWN_CATEGORY = new();
+    public readonly RequestCategory UNKNOWN_CATEGORY = new();
+
+    public RequestCategory UKNOWN => UNKNOWN_CATEGORY;
+
     public RequestCategoryService(AppDbContext dbContext)
     {
         _dbContext = dbContext;

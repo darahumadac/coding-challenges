@@ -1,11 +1,8 @@
-using System.Threading.Tasks;
+using approvalworkflow.Enums;
 using approvalworkflow.Models;
 using approvalworkflow.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace approvalworkflow.Controllers;
 
@@ -59,7 +56,6 @@ public class RequestController : Controller
     {
         if (!ModelState.IsValid)
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return BadRequest(ModelState);
         }
 
@@ -75,8 +71,7 @@ public class RequestController : Controller
         var updateResult = await _requestService.UpdateRecordAsync(userRequest);
         if (!updateResult.Success)
         {
-            ModelState.AddModelError(string.Empty, updateResult.ErrorEventId.ToString()!);
-            return StatusCode(500);
+            return StatusCode(500, new {error = updateResult.ErrorEventId.ToString()!});
         }
 
         return Ok(updateResult.Data);
@@ -91,7 +86,7 @@ public class RequestController : Controller
     [HttpPost("Delete/{requestId}")]
     public async Task<IActionResult> Delete(int requestId)
     {
-        var deleted = await _requestService.DeleteRecordAsync(requestId);
+        var deleted = await _requestService.DeleteRecordAsync(User, requestId);
         if(deleted)
         {
             return NoContent();
@@ -102,9 +97,21 @@ public class RequestController : Controller
 
     //named the route to try using the asp-route attribute in the view
     [HttpGet("View/{requestId}", Name = "ViewRequest")]
-    public IActionResult GetRequest(int requestId)
+    public async Task<IActionResult> GetRequest(int requestId)
     {
-        return View(requestId);
+        var result = await _requestService.GetRecordByUserAsync(User, requestId);
+        if(result.ErrorEventId != null)
+        {
+            if(result.ErrorEventId == ErrorEventId.UnauthorizedRequestAccess)
+            {
+                //we dont show that the request exists
+                return NotFound();
+            }
+            return StatusCode(500);
+        }
+        
+        var request = (UserRequest) result.Data!;
+        return View(request);
     }
 
     [HttpPost("Approve/{requestId}")]

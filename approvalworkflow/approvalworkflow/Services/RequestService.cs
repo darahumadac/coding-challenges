@@ -12,7 +12,6 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
     private readonly ILogger<RequestService> _logger;
     private readonly AppUserService _appUserService;
     private readonly ILookupService<RequestCategory> _requestCategoryService;
-    private RequestCategory UNKNOWN_CATEGORY = new();
 
     public RequestService(AppDbContext dbContext, 
                 ILogger<RequestService> logger, 
@@ -39,7 +38,6 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
         }
         return await requestsByUser
                 .Include(u => u.Type)
-                .Include(u => u.Approvals)
                 .ToListAsync();
     }
 
@@ -105,11 +103,23 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
         throw new NotImplementedException();
     }
 
-    public async Task<bool> DeleteRecordAsync(int recordId)
+    public async Task<bool> DeleteRecordAsync(ClaimsPrincipal user, int recordId)
     {
+        var currentUser = await _appUserService.AppUserAsync(user);
+        if(currentUser == _appUserService.UNKNOWN_USER)
+        {
+            return false;
+        }
+
+        var toDelete = _dbContext.UserRequests.Find(recordId);
+        if(toDelete == null || toDelete.CreatedById != currentUser.Id)
+        {
+            return false;
+        }
+
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try{
-            _dbContext.UserRequests.Remove(new UserRequest{Id = recordId});
+            _dbContext.UserRequests.Remove(toDelete);
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
             
@@ -134,7 +144,7 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
 
         //validate request type
         var requestType = _requestCategoryService.GetRecord(request.TypeId);
-        if(requestType == UNKNOWN_CATEGORY)
+        if(requestType == _requestCategoryService.UKNOWN)
         {
             //TODO: add logging             
             return new OpResult(Success: false, ErrorEventId: ErrorEventId.CategoryNotExists);
@@ -183,5 +193,24 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
             _logger.LogError(ex, ex.Message);
             return new OpResult(Success: false, ErrorEventId: ErrorEventId.UnexpectedErrorOnSave);
         }
+    }
+
+    public async Task<OpResult> GetRecordByUserAsync(ClaimsPrincipal user, int recordId)
+    {
+        var currentUser = await _appUserService.AppUserAsync(user);
+        var request = _dbContext.UserRequests.Find(recordId);
+        if(request == null || request.CreatedById != currentUser.Id)
+        {
+            return new OpResult(Success: false, ErrorEventId: ErrorEventId.UnauthorizedRequestAccess);
+        }
+        //explicitly load the approvals with the entry
+        await _dbContext.Entry(request)
+            .Collection(r => r.Approvals)
+            .Query()
+            .Include(a => a.Approver)
+            .LoadAsync();
+
+
+        return new OpResult(Success: true, Data: request);
     }
 }
