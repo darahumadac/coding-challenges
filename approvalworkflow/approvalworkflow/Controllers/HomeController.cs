@@ -31,6 +31,10 @@ public class HomeController : Controller
             return View(viewModel);    
         }
 
+        if(!HttpContext.Request.Headers["X-Requested-With"].Equals("XMLHttpRequest"))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
         return PartialView("_TablePartial", viewModel);
     }
 

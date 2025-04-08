@@ -202,7 +202,8 @@ body {
 }
 
 .timeline-step .timestamp, 
-.timeline-step .approver {
+.timeline-step .approver,
+.remarks {
   font-size: 0.875rem;
   color: #6c757d;
 }
@@ -222,4 +223,12 @@ body {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+.status-badge{
+  margin: 0px 10px;
+}
+
+.info{
+  width: 40%;
 }

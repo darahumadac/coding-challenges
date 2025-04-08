@@ -25,6 +25,7 @@
 <div id="modal-container">
     @await Html.PartialAsync("_ConfirmDeletePartial")
 </div>
+<div id="request-details-container"></div>
 
 @section Scripts{
     <script>
@@ -68,8 +69,16 @@
                 if(!$(target).is('.request-info')){
                     return;
                 }
+                //get info for request
+                $('#loading').removeClass('d-none');
+                $.get(`/Requests/View/${requestId}`, function(response){
+                    $('#loading').addClass('d-none');
+                    $('#request-details-container').html(response);
+                    $('#view-request-modal').modal('toggle');
+                });
+
                 //redirect
-                window.location.href = `/Requests/View/${requestId}`;
+                //window.location.href = `/Requests/View/${requestId}`;
             });
 
             //delete confirmed

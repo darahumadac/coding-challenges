@@ -1,3 +1,4 @@
+using approvalworkflow.Controllers.ActionFilters;
 using approvalworkflow.Enums;
 using approvalworkflow.Models;
 using approvalworkflow.Services;
@@ -52,6 +53,7 @@ public class RequestController : Controller
     }
 
     [HttpPost("Save")]
+    [AjaxOnly]
     public async Task<IActionResult> Save(UserRequestViewModel request)
     {
         if (!ModelState.IsValid)
@@ -71,7 +73,8 @@ public class RequestController : Controller
         var updateResult = await _requestService.UpdateRecordAsync(userRequest);
         if (!updateResult.Success)
         {
-            return StatusCode(500, new {error = updateResult.ErrorEventId.ToString()!});
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                new {error = updateResult.ErrorEventId.ToString()!});
         }
 
         return Ok(updateResult.Data);
@@ -84,6 +87,7 @@ public class RequestController : Controller
     }
 
     [HttpPost("Delete/{requestId}")]
+    [AjaxOnly]
     public async Task<IActionResult> Delete(int requestId)
     {
         var deleted = await _requestService.DeleteRecordAsync(User, requestId);
@@ -92,11 +96,12 @@ public class RequestController : Controller
             return NoContent();
         }
 
-        return StatusCode(500);
+        return StatusCode(StatusCodes.Status500InternalServerError);
     }
 
     //named the route to try using the asp-route attribute in the view
     [HttpGet("View/{requestId}", Name = "ViewRequest")]
+    [AjaxOnly]
     public async Task<IActionResult> GetRequest(int requestId)
     {
         var result = await _requestService.GetRecordByUserAsync(User, requestId);
@@ -111,7 +116,8 @@ public class RequestController : Controller
         }
         
         var request = (UserRequest) result.Data!;
-        return View(request);
+        return PartialView("_GetRequestPartialView", request);
+        // return View(request);
     }
 
     [HttpPost("Approve/{requestId}")]
