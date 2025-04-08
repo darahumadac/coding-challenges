@@ -95,10 +95,6 @@ body {
   height: 55px;
 }
 
-.request-info{
-  vertical-align: middle;
-}
-
 .paginator{
   margin-top: 15px;
   position: relative;
@@ -133,6 +129,11 @@ body {
 
 #records{
   position: relative;
+}
+
+.table-scroll-vertical{
+  overflow-y: auto;
+  max-height: 550px;
 }
 
 #loading {
