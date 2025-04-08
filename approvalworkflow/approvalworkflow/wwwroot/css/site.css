@@ -232,3 +232,7 @@ body {
 .info{
   width: 40%;
 }
+
+.table-header.sticky-top{
+  z-index: 1;
+}
