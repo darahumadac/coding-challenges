@@ -1,10 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using approvalworkflow.Database
+@using approvalworkflow.Services
 @inject SignInManager<User> SignInManager
+@inject UIService UIService
 @model UserRequestDashboardViewModel
 @{
-    
-    ViewData["Title"] = SignInManager.IsSignedIn(User) ? "Welcome": "Hello";
+
+    ViewData["Title"] = SignInManager.IsSignedIn(User) ? "Welcome" : "Hello";
 }
 
 <div class="text-center">
@@ -16,88 +18,82 @@
                 <span>Submit request</span>
             </a>
         </div>
-        <partial name="_FilterPartial", model="Model.PageSize"/>
+        <partial name="_FilterPartial" , model="Model.PageSize" />
     </div>
-    <div id="records">
-        <partial name="_TablePartial", model="Model" />
+    <div>
+        <div id="records">
+            <partial name="_TablePartial" , model="Model" />
+        </div>
     </div>
+
 </div>
 <div id="modal-container">
     @await Html.PartialAsync("_ConfirmDeletePartial")
 </div>
 <div id="request-details-container"></div>
 
-@section Scripts{
+@section Scripts {
     <script>
-        const getUserRequests = function(){
+        const getUserRequests = function () {
             //send get request
             const dashboardUrl = `@Url.Action("Index", "Home")`;
             $('#loading').removeClass('d-none');
-            $.ajax(dashboardUrl,{
+            $.ajax(dashboardUrl, {
                 method: "GET",
                 data: {
                     pageSize: () => $('#page-size-dropdown').val(),
                     page: 1
                 },
-                success: function(response){
+                success: function (response) {
                     $('#records').html(response);
                 },
-                complete: function(){
+                complete: function () {
                     $('#loading').addClass('d-none');
                 }
             });
         };
 
-        jQuery(function(){
-            $('#records').on('click', function(e){
-                //confirm delete
-                const target = e.target;
-                if(!$(target).is('.delete-btn')){
-                    return;
-                }
-                const requestId = $(target).data('id');
-                $('#modal-info').html(`<strong><p>Request &num;${requestId} - ${$(target).data('title')}</p></strong>`);
+        jQuery(function () {
+            //confirm delete
+            $('#records').on('click', '.delete-btn', function () {
+                const requestId = $(this).data('id');
+                $('#modal-info').html(`<strong><p>Request &num;${requestId} - ${$(this).data('title')}</p></strong>`);
                 $('#modal-info').removeData();
                 $('#modal-info').data('requestId', requestId);
                 $('#confirmDeleteModal').modal('toggle');
             });
 
-            $('#records').on('click', function(e){
+            //view request
+            $('#records').on('click', '.request-info', function () {
                 //view request by clicking on the tr
-                const target = e.target;
-                const requestId = $(target).closest('tr').data('id');
-                if(!$(target).is('.request-info')){
-                    return;
-                }
+                const requestId = $(this).closest('tr').data('id');
                 //get info for request
                 $('#loading').removeClass('d-none');
-                $.get(`/Requests/View/${requestId}`, function(response){
+                $.get(`/Requests/View/${requestId}`, function (response) {
                     $('#loading').addClass('d-none');
                     $('#request-details-container').html(response);
                     $('#view-request-modal').modal('toggle');
                 });
-
                 //redirect
                 //window.location.href = `/Requests/View/${requestId}`;
             });
 
+            //handle change in rows per page 
+            $('#records').on('change', '#page-size-dropdown', getUserRequests);
+
             //delete confirmed
-            $('#delete-form').submit(function(e){
+            $('#delete-form').submit(function (e) {
                 e.preventDefault();
                 const requestId = $('#modal-info').data('requestId');
                 let deleteUrl = `@Url.Action("Delete", "Requests")/${requestId}`;
                 $.ajax(deleteUrl, {
                     method: "POST",
-                    success: function(){
+                    success: function () {
                         getUserRequests();
                         $('#confirmDeleteModal').modal('toggle');
                     }
                 });
             });
-
-            $('#page-size-dropdown').change(getUserRequests);
         })
     </script>
 }
-   
-

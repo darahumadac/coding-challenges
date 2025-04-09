@@ -3,35 +3,10 @@
 @inject UIService UIService
 @model int
 <nav class="navbar">
-    <div class="filter paginator">
-        <div class="page-size">
-            <label>Show rows per page</label>
-            <select id="page-size-dropdown">
-                @foreach(var pageSize in UIService.PaginatorPageSizes)
-                {
-                    var text = pageSize == 0 ? "All" : pageSize.ToString();
-                    if(pageSize == Model)
-                    {
-                        <option value="@pageSize" selected>@text</option>
-                    }
-                    else
-                    {
-                        <option value="@pageSize">@text</option>
-                    }
-                }
-            </select>
-        </div>    
-    </div>
     @* TODO: Add search implementation *@
-    <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>
-    @* TODO: add implementation for filter by status *@
     <div class="dropdown">
         <a class="btn dropdown-toggle" href="#" role="button" id="filter-status-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fa-solid fa-filter"></i>
-            Filter by Status
         </a>
         <ul id="status-dropdown" class="dropdown-menu" aria-labelledby="filter-status-dropdown">
             @foreach(var status in UIService.Statuses(typeof(RequestStatus)))
@@ -40,4 +15,9 @@
             }
         </ul>
     </div>
+    @* TODO: add implementation for filter by status *@
+    <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
 </nav>

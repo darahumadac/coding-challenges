@@ -1,32 +1,53 @@
+@using approvalworkflow.Services
+@inject UIService UIService
 @model UserRequestDashboardViewModel
 @{
     var message = "Showing all records";
-    if(Model.PageSize > 0 && Model.TotalRecords > Model.PageSize)
+    if (Model.PageSize > 0 && Model.TotalRecords > Model.PageSize)
     {
         message = $"Showing {Model.Start} to {Model.End} of {Model.TotalRecords} ";
     }
 }
 <div class="paginator">
-    <div class="page-size">
-       <span id="page-size-label">@message</span>
+    <div class="filter paginator">
+        <div class="page-size">
+            <label>Show rows per page</label>
+            <select id="page-size-dropdown" class="me-2">
+                @foreach (var pageSize in UIService.PaginatorPageSizes)
+                {
+                    var text = pageSize == 0 ? "All" : pageSize.ToString();
+                    if (pageSize == Model.PageSize)
+                    {
+                        <option value="@pageSize" selected>@text</option>
+                    }
+                    else
+                    {
+                        <option value="@pageSize">@text</option>
+                    }
+                }
+            </select>
+            <span id="page-size-label">@message</span>
+        </div>
     </div>
     @* TODO: add change of page *@
-    @{var showPageNav = Model.PageCount > 1 ? "" : "d-none";}
-    <nav aria-label="page navigation" class="@showPageNav">            
-        <ul class="pagination justify-content-end">
-            @{
-                var firstDisabled = Model.Page == 1 ? "disabled" : "";
-                <li class="page-item @firstDisabled"><a class="page-link" href="#">First</a></li>
-                <li class="page-item @firstDisabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&lt;</a>
-                </li>
-            }
-            @for(var i=1; i<=Model.PageCount; i++)
-            {
-                <li class="page-item"><a class="page-link" href="#">@i</a></li>
-            }
-            <li class="page-item"><a class="page-link" href="#">&gt;</a></li>
-            <li class="page-item"><a class="page-link" href="#">Last</a></li>
-        </ul>
-    </nav>
-</div> 
+    @{
+        var showPageNav = Model.PageCount > 1 ? "" : "d-none";
+    }
+    <div>
+        <nav aria-label="page navigation" class="align-middle @showPageNav">
+            <ul class="pagination justify-content-end">
+                @{
+                    var firstDisabled = Model.Page == 1 ? "disabled" : "";
+                    <li class="page-item @firstDisabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&lt; Previous</a>
+                    </li>
+                }
+                @for (var i = 1; i <= Model.PageCount; i++)
+                {
+                    <li class="page-item"><a class="page-link" href="#">@i</a></li>
+                }
+                <li class="page-item"><a class="page-link" href="#">Last &gt;</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
