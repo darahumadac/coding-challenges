@@ -42,7 +42,8 @@
                 method: "GET",
                 data: {
                     pageSize: () => $('#page-size-dropdown').val(),
-                    page: 1
+                    page: 1,
+                    status: () => $('#filter-status-dropdown').data('selected')
                 },
                 success: function (response) {
                     $('#records').html(response);
@@ -94,6 +95,27 @@
                     }
                 });
             });
+
+            //filter by status
+            $('#status-dropdown .dropdown-item').on('click', function (e) {
+                e.preventDefault();
+                const status = $(this).attr('id');
+                
+                $(`#status-dropdown .dropdown-item#${status}`).toggleClass('active');
+
+                const statusFilterDropdown = $('#filter-status-dropdown');
+                const previousStatus = statusFilterDropdown.data('selected');
+                if (!previousStatus || previousStatus !== status) {
+                    statusFilterDropdown.data('selected', $(this).data('status'));
+                }
+
+                previousStatus !== status ?
+                    $(`#${previousStatus}`).removeClass('active')
+                    : statusFilterDropdown.data('selected', null); //reset the filter
+
+                getUserRequests();
+            });
+
         })
     </script>
 }

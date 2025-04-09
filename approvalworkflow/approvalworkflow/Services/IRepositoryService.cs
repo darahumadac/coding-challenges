@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace approvalworkflow.Services;
@@ -6,7 +7,7 @@ public interface IRepositoryService<TBy, TFor>
                         where TBy : class
                         where TFor : class
 {
-    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<TBy>? paginator = null);
+    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<TBy>? paginator = null, Expression<Func<TBy, bool>>? filter = null);
     Task<List<TFor>> GetRecordsForUserAsync(ClaimsPrincipal user);
     Task<OpResult> CreateRecordAsync(TBy newRecord);
     Task<OpResult> UpdateRecordAsync(TBy record);

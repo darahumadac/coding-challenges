@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using approvalworkflow.Models;
 using Microsoft.AspNetCore.Authorization;
 using approvalworkflow.Services;
+using approvalworkflow.Enums;
+using System.Linq.Expressions;
 
 namespace approvalworkflow.Controllers;
 
@@ -23,7 +25,14 @@ public class HomeController : Controller
     {
         viewModel.PageSize = Request.Query.Count > 0 ? viewModel.PageSize : 5;
 
-        var userRequests = await _requestService.GetRecordsByUserAsync(User, viewModel);
+        Expression<Func<UserRequest, bool>>? filter = null;
+
+        if(viewModel.Status != null)
+        {
+            filter = (r) => r.Status == Enum.Parse<RequestStatus>(viewModel.Status!);
+        }
+
+        var userRequests = await _requestService.GetRecordsByUserAsync(User, viewModel, filter);
         viewModel.Requests = userRequests;
         
         if(Request.Query.Count == 0)

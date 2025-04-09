@@ -11,7 +11,7 @@
         <ul id="status-dropdown" class="dropdown-menu" aria-labelledby="filter-status-dropdown">
             @foreach(var status in UIService.Statuses(typeof(RequestStatus)))
             {
-                <li><a class="dropdown-item" href="#">@status</a></li>
+                <li><a class="dropdown-item" href="#" id="@status" data-status="@status">@status</a></li>
             }
         </ul>
     </div>

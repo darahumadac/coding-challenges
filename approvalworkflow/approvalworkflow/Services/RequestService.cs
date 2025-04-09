@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using approvalworkflow.Database;
 using approvalworkflow.Enums;
@@ -24,14 +25,21 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
         _requestCategoryService = requestCategoryService;
     }
 
-    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<UserRequest>? paginator = null)
+    public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, 
+        Paginated<UserRequest>? paginator = null, Expression<Func<UserRequest, bool>>? filter = null)
     {
         var currentUser = await _appUserService.AppUserAsync(user);
         var requestsByUser = _dbContext.UserRequests
-                .Where(u => u.CreatedById == currentUser.Id)
-                .OrderBy(u => u.Status)
-                .ThenByDescending(u => u.UpdatedDate)
-                .AsQueryable();
+                .Where(u => u.CreatedById == currentUser.Id);
+
+        if(filter != null)
+        {
+            requestsByUser = requestsByUser.Where(filter);
+        }
+        
+        requestsByUser = requestsByUser.OrderBy(u => u.Status)
+        .ThenByDescending(u => u.UpdatedDate)
+        .AsQueryable();
 
         if(paginator != null){
             requestsByUser = paginator.GetRecords(requestsByUser);
