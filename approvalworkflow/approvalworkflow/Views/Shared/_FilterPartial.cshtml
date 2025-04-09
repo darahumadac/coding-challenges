@@ -3,7 +3,7 @@
 @inject UIService UIService
 @model int
 <nav class="navbar">
-    @* TODO: Add search implementation *@
+    <span id="current-filter" class="badge rounded-pill bg-primary d-none">Draft</span>
     <div class="dropdown">
         <a class="btn dropdown-toggle" href="#" role="button" id="filter-status-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fa-solid fa-filter"></i>
@@ -15,9 +15,8 @@
             }
         </ul>
     </div>
-    @* TODO: add implementation for filter by status *@
-    <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+    <form class="d-flex" id="search-request-form">
+        <input id="search" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
 </nav>

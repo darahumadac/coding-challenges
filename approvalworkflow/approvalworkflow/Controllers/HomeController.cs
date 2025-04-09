@@ -25,14 +25,17 @@ public class HomeController : Controller
     {
         viewModel.PageSize = Request.Query.Count > 0 ? viewModel.PageSize : 5;
 
-        Expression<Func<UserRequest, bool>>? filter = null;
-
+        List<Expression<Func<UserRequest, bool>>>? filters = new();
         if(viewModel.Status != null)
         {
-            filter = (r) => r.Status == Enum.Parse<RequestStatus>(viewModel.Status!);
+            filters.Add((r) => r.Status == Enum.Parse<RequestStatus>(viewModel.Status!));
+        }
+        if(viewModel.Keyword != null)
+        {
+            filters.Add((r) => r.Title.Contains(viewModel.Keyword) || r.Description.Contains(viewModel.Keyword));
         }
 
-        var userRequests = await _requestService.GetRecordsByUserAsync(User, viewModel, filter);
+        var userRequests = await _requestService.GetRecordsByUserAsync(User, viewModel, filters: filters.Count == 0 ? null : filters);
         viewModel.Requests = userRequests;
         
         if(Request.Query.Count == 0)

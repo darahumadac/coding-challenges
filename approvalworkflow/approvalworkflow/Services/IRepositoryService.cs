@@ -7,7 +7,7 @@ public interface IRepositoryService<TBy, TFor>
                         where TBy : class
                         where TFor : class
 {
-    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<TBy>? paginator = null, Expression<Func<TBy, bool>>? filter = null);
+    Task<List<TBy>> GetRecordsByUserAsync(ClaimsPrincipal user, Paginated<TBy>? paginator = null, List<Expression<Func<TBy, bool>>>? filters = null);
     Task<List<TFor>> GetRecordsForUserAsync(ClaimsPrincipal user);
     Task<OpResult> CreateRecordAsync(TBy newRecord);
     Task<OpResult> UpdateRecordAsync(TBy record);

@@ -43,7 +43,8 @@
                 data: {
                     pageSize: () => $('#page-size-dropdown').val(),
                     page: 1,
-                    status: () => $('#filter-status-dropdown').data('selected')
+                    status: () => $('#filter-status-dropdown').data('selected'),
+                    keyword: $.trim($('#search').val())
                 },
                 success: function (response) {
                     $('#records').html(response);
@@ -100,7 +101,7 @@
             $('#status-dropdown .dropdown-item').on('click', function (e) {
                 e.preventDefault();
                 const status = $(this).attr('id');
-                
+
                 $(`#status-dropdown .dropdown-item#${status}`).toggleClass('active');
 
                 const statusFilterDropdown = $('#filter-status-dropdown');
@@ -113,6 +114,25 @@
                     $(`#${previousStatus}`).removeClass('active')
                     : statusFilterDropdown.data('selected', null); //reset the filter
 
+                //add badge
+                const newStatus = statusFilterDropdown.data('selected');
+                const currentFilter = $("#current-filter");
+                newStatus && currentFilter.text(newStatus)
+                    && currentFilter.removeClass('d-none')
+                    || currentFilter.addClass('d-none');
+
+                getUserRequests();
+            });
+
+            //search request form submit
+            $('#search-request-form').on('submit', function (e) {
+                e.preventDefault();
+                getUserRequests();
+            });
+
+            //reset the search input
+            $('#search').on('change', function () {
+                if ($.trim($(this).val()) !== '') return;
                 getUserRequests();
             });
 

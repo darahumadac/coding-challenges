@@ -26,17 +26,20 @@ public class RequestService : IRepositoryService<UserRequest, RequestApproval>
     }
 
     public async Task<List<UserRequest>> GetRecordsByUserAsync(ClaimsPrincipal user, 
-        Paginated<UserRequest>? paginator = null, Expression<Func<UserRequest, bool>>? filter = null)
+        Paginated<UserRequest>? paginator = null, List<Expression<Func<UserRequest, bool>>>? filters = null)
     {
         var currentUser = await _appUserService.AppUserAsync(user);
         var requestsByUser = _dbContext.UserRequests
                 .Where(u => u.CreatedById == currentUser.Id);
 
-        if(filter != null)
+        if(filters != null)
         {
-            requestsByUser = requestsByUser.Where(filter);
+            foreach(var filter in filters)
+            {
+                requestsByUser = requestsByUser.Where(filter);
+            }
         }
-        
+    
         requestsByUser = requestsByUser.OrderBy(u => u.Status)
         .ThenByDescending(u => u.UpdatedDate)
         .AsQueryable();

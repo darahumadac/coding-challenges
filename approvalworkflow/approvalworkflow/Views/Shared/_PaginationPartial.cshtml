@@ -2,17 +2,20 @@
 @inject UIService UIService
 @model UserRequestDashboardViewModel
 @{
-    var message = "Showing all records";
+    var message = Model.TotalRecords > 0 ? "Showing all records" : string.Empty;
     if (Model.PageSize > 0 && Model.TotalRecords > Model.PageSize)
     {
         message = $"Showing {Model.Start} to {Model.End} of {Model.TotalRecords} ";
     }
+
+    var showPageNav = Model.PageCount > 1 ? "" : "d-none";
+
 }
 <div class="paginator">
     <div class="filter paginator">
         <div class="page-size">
-            <label>Show rows per page</label>
-            <select id="page-size-dropdown" class="me-2">
+            <label class="@showPageNav">Show rows per page</label>
+            <select id="page-size-dropdown" class="me-2 @showPageNav">
                 @foreach (var pageSize in UIService.PaginatorPageSizes)
                 {
                     var text = pageSize == 0 ? "All" : pageSize.ToString();
@@ -30,9 +33,6 @@
         </div>
     </div>
     @* TODO: add change of page *@
-    @{
-        var showPageNav = Model.PageCount > 1 ? "" : "d-none";
-    }
     <div>
         <nav aria-label="page navigation" class="align-middle @showPageNav">
             <ul class="pagination justify-content-end">
